@@ -58,9 +58,10 @@ namespace MipsEmu {
         /// <summary>Get the value as an unsigned integer.</summary>
         public int GetAsUnsignedInt() {
             int sum = 0;
-            for (int index = 0; index < values.Length - 1; index++) {
-                if (values[index])
+            for (int index = 0; index < values.Length; index++) {
+                if (values[index]) {
                     sum += (int) Math.Pow(2, index);
+                }
             }
             return sum;
         }

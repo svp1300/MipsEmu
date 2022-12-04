@@ -65,4 +65,22 @@ public class BitsTest {
         Assert.Equal(7, cut.GetAsSignedInt());
     }
 
+    // 010101100
+    [Fact]
+    public void GetSignedIntFromRangeTest() {
+                                    //   0      0      1     1     0      1     0     1      0
+        var cut = new Bits(new bool[] {false, false, true, true, false, true, false, true, false});
+        Assert.Equal(-5, cut.GetSignedIntFromRange(2, 4));
+        Assert.Equal(5, cut.GetSignedIntFromRange(3, 4));
+        Assert.Equal(5, cut.GetSignedIntFromRange(5, 4));
+
+    }
+
+    [Fact]
+    public void GetUnsignedIntTest() {
+        var cut = new Bits(new bool[] {false, true, false, true});
+        Assert.Equal(10, cut.GetAsUnsignedInt());
+        cut = new Bits(new bool[] {true, true, true, false});
+        Assert.Equal(7, cut.GetAsUnsignedInt());       
+    } 
 }
