@@ -1,3 +1,5 @@
+using MipsEmu.Emulation.Registers;
+
 namespace MipsEmu.Emulation.Instructions {
 
     public class AddInstruction : InstructionRType {
@@ -5,14 +7,14 @@ namespace MipsEmu.Emulation.Instructions {
         /// <summary>Store the sum of $rs and $rt in $rd.</summary>
         public override void Run(Hardware hardware, Bits rsValue, Bits rtValue, int rd) {
             Bits sum = hardware.alu.Add(rsValue, rtValue);
-            hardware.registers.StoreBits(rd, sum);
+            hardware.registers.SetRegisterBits(rd, sum);
         }
     }
 
     public class JumpRegisterInstruction : InstructionRType {
 
         public override void Run(Hardware hardware, Bits rsValue, Bits rtValue, int rd) {
-            hardware.programCounter.StoreBits(rsValue);
+            hardware.programCounter.SetBits(rsValue);
         }
     }
 
@@ -20,8 +22,8 @@ namespace MipsEmu.Emulation.Instructions {
 
         public override void Run(Hardware hardware, Bits rsValue, Bits rtValue, int rd) {
             Bits currentPosition = hardware.programCounter.GetBits();
-            hardware.registers.StoreBits(RegisterFile.RA_INDEX, currentPosition);
-            hardware.programCounter.StoreBits(rsValue);
+            hardware.registers.SetRegisterBits(RegisterFile.RA_INDEX, currentPosition);
+            hardware.programCounter.SetBits(rsValue);
         }
     }
 

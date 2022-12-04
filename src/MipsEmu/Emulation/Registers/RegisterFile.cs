@@ -12,11 +12,19 @@ namespace MipsEmu.Emulation.Registers {
             }
         }
 
-        public Bits GetBits(int index) {
+        public Bits GetRegisterBits(int index) {
             if (index < 0 || index > 31) {
                 throw new Exception("Index out of range for register file.");
             } else {
                 return registers[index].GetBits();
+            }
+        }
+
+        public void SetRegisterBits(int index, Bits bits) {
+            if (index < 0 || index > 31) {
+                throw new Exception("Index out of range for register file.");
+            } else {
+                registers[index].SetBits(bits);
             }
         }
         

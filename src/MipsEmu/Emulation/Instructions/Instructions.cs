@@ -1,5 +1,6 @@
 using MipsEmu.Emulation.Registers;
 using MipsEmu.Emulation.Devices;
+using MipsEmu.Emulation;
 
 namespace MipsEmu.Emulation.Instructions {
 
@@ -12,17 +13,17 @@ namespace MipsEmu.Emulation.Instructions {
     public abstract class InstructionIType : IInstruction {
 
         public void Run(Hardware hardware, Bits bits) {
-            var imm = bits.Subset(0, 16);
-            var rs = bits.GetIntFromRange(16, 5);
-            var rt = bits.GetIntFromRange(21, 5);
+            var imm = bits.GetBits(0, 16);
+            var rs = bits.GetSignedIntFromRange(16, 5);
+            var rt = bits.GetSignedIntFromRange(21, 5);
 
-            Bits sourceValue = hardware.registers.GetValue(rs);
+            Bits sourceValue = hardware.registers.GetRegisterBits(rs);
 
             Run(hardware, sourceValue, rt, imm);
         }
 
-        public int GetStoreAddress(Bits rs, int imm) {
-            return hardware.alu.Add(rs, Bits.SignExtend16(imm)).GetInt();
+        public Bits CalculateStoreAddress(Hardware hardware, Bits rsValue, Bits imm) {
+            return hardware.alu.Add(rsValue, Bits.SignExtend16(imm));
         }
 
         public abstract void Run(Hardware hardware, Bits rsValue, int rt, Bits imm);
@@ -32,10 +33,10 @@ namespace MipsEmu.Emulation.Instructions {
 
 
         public void Run(Hardware hardware, Bits bits) {
-            var rs = bits.Subset(21, 5);
-            var rt = bits.Subset(16, 5);
-            var rd = bits.GetIntFromRange(11, 5);
-            Run(hardware, rs, rt, imm);
+            var rs = bits.GetBits(21, 5);
+            var rt = bits.GetBits(16, 5);
+            var rd = bits.GetSignedIntFromRange(11, 5);
+            Run(hardware, rs, rt, rd);
         }
 
         public abstract void Run(Hardware hardware, Bits rsValue, Bits rtValue, int rd);

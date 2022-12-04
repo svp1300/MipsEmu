@@ -5,9 +5,9 @@ namespace MipsEmu.Emulation.Instructions {
 
         /// <summary>Retrieve the contents at $rs + imm and store it in $rt.</summary>
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
-            int address = GetStoreAddress(rs, imm);
+            int address = CalculateStoreAddress(hardware, rsValue, imm).GetAsSignedInt();
             Bits contents = hardware.memory.LoadBits(address, Bits.WORD_SIZE);
-            hardware.registers.SetBits(rt, contents);
+            hardware.registers.SetRegisterBits(rt, contents);
         }
 
     }
@@ -16,8 +16,8 @@ namespace MipsEmu.Emulation.Instructions {
 
         /// <summary>Store the contents of $rt into $rs + imm.</summary>
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
-            int address = GetStoreAddress(rs, imm);
-            Bits rtValue = hardware.memory.registers.GetBits(rt);
+            int address = CalculateStoreAddress(hardware, rsValue, imm).GetAsSignedInt();
+            Bits rtValue = hardware.registers.GetRegisterBits(rt);
             hardware.memory.StoreBits(address, rtValue);
         }
     }
@@ -27,7 +27,7 @@ namespace MipsEmu.Emulation.Instructions {
         /// <summary>Add $rs and imm then store in rt.</summary>
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
             Bits sum = hardware.alu.Add(rsValue, imm);
-            hardware.registers.SetBits(rt, sum);
+            hardware.registers.SetRegisterBits(rt, sum);
         }
     }
 

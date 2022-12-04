@@ -10,7 +10,7 @@ namespace MipsEmu.Emulation.Registers {
         }
 
         public void SetBits(Bits bits) {
-            if (bits.size != 32) {
+            if (bits.GetLength() != 32) {
                 throw new Exception("Size mismatch between register and stored bits.");
             } else {
                 data = bits;

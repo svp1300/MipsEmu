@@ -1,6 +1,6 @@
 using MipsEmu.Emulation.Instructions;
 
-namespace MipsEmu.Emulation {
+namespace MipsEmu.Emulation.Instructions {
 
     class InstructionParser {
         
