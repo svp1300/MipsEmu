@@ -5,6 +5,10 @@ namespace MipsEmu.Emulation.Devices {
         public static readonly int TEXT_START = 0x00400000;
         private Bits memory;
 
+        public Ram(int memorySize) {
+            memory = new Bits(memorySize);
+        }
+
         public void StoreBits(int address, Bits data) {
             memory.SetBits(address, data);
         }

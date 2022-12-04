@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 
 namespace MipsEmu {
 
@@ -12,11 +13,14 @@ namespace MipsEmu {
         }
 
         public Bits(bool[] values) {
-            this.values = values;
+            this.values = new bool[values.Length];
+            for (int i = 0; i < values.Length; i++) {
+                this.values[i] = values[i];
+            }
         }
 
-        private void Store(int offset, bool[] bits) {
-            if (offset < 0 || offset + bits.Length >= values.Length) {
+        public void Store(int offset, bool[] bits) {
+            if (offset < 0 || offset + bits.Length > values.Length) {
                 throw new IndexOutOfRangeException("Specified bit(s) are out of the available range.");
             } else {
                 for (int b = 0; b < bits.Length; b++) {
@@ -30,7 +34,7 @@ namespace MipsEmu {
         }
 
         public bool[] Load(int offset, int size) {
-            if (offset < 0 || offset + size >= values.Length) {
+            if (offset < 0 || offset + size > values.Length) {
                 throw new IndexOutOfRangeException("Specified bit(s) are out of the available range.");
             } else {
                 bool[] read = new bool[size];
@@ -67,30 +71,61 @@ namespace MipsEmu {
             if (values[values.Length - 1]) {
                 sum = -((int) Math.Pow(2, values.Length - 1));
             }
-            for (int index = 0; index < values.Length - 1; index++) {
+            for (int index = 0; index <= values.Length - 2; index++) {
                 if (values[index])
                     sum += (int) Math.Pow(2, index);
             }
             return sum;
         }
+
+        public void SetFromSignedInt(int number) {
+            // TODO simplify
+            if (number < 0) {
+                values[values.Length - 1] = true;
+                for (int p = values.Length - 2; p >= 0 && number < 0; p--) {
+                    var power = (int) Math.Pow(2, p);
+                    var leq = number + power <= 0;
+                    values[p] = leq;
+                    if (leq) {
+                        number += power;
+                    }
+                }
+            } else {
+                for (int p = values.Length - 2; p >= 0 && number > 0; p--) {
+                    var power = (int) Math.Pow(2, p);
+                    var geq = number - power >= 0;
+                    values[p] = geq;
+                    if (geq) {
+                        number += power;
+                    }
+                }
+            }
+        }
+
+        public override string ToString() {
+            var builder = new StringBuilder(values.Length);
+            for(int bit = values.Length - 1; bit >= 0; bit--) {
+                builder.Append(values[bit] ? "1" : "0");
+            }
+            return builder.ToString();
+        }
         
-        public static Bits SignExtend(Bits source, int amount) {
-            var result = new Bits(source.GetLength() + amount);
-            result.Store(0, source.values);
+        public Bits SignExtend(int amount) {
+            var result = new Bits(GetLength() + amount);
+            result.Store(amount, values);
             return result;
         }
 
-        public static Bits SignExtend16(Bits source) {
-            return SignExtend(source, 16);
+        public Bits SignExtend16() {
+            return SignExtend(16);
         }
         
         public int GetLength() {
             return values.Length;
         }
   
-        /// <summary>Create and return a duplicate of the values.</summary>
         public bool[] GetValues() {
-            return Load(0, GetLength());
+            return values;
         }
 
     }

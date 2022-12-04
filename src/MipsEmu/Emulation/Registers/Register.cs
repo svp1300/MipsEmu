@@ -20,5 +20,9 @@ namespace MipsEmu.Emulation.Registers {
         public Bits GetBits() {
             return data;
         }
+
+        public void SetFromSignedInt(int value) {
+            // TODO implement
+        }
     }
 }

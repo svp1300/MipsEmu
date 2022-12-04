@@ -23,7 +23,7 @@ namespace MipsEmu.Emulation.Instructions {
         }
 
         public Bits CalculateStoreAddress(Hardware hardware, Bits rsValue, Bits imm) {
-            return hardware.alu.Add(rsValue, Bits.SignExtend16(imm));
+            return hardware.alu.Add(rsValue, imm.SignExtend16());
         }
 
         public abstract void Run(Hardware hardware, Bits rsValue, int rt, Bits imm);
