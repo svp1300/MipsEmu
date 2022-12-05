@@ -2,6 +2,8 @@ using MipsEmu.Emulation.Instructions;
 using MipsEmu.Emulation.Registers;
 using MipsEmu.Emulation.Devices;
 
+using System;
+
 namespace MipsEmu {
     
     public struct Hardware {
@@ -28,13 +30,19 @@ namespace MipsEmu {
             one = new Bits(new bool[]{true}).SignExtend(31);
         }
 
-        public virtual void Cycle() {
+        public virtual bool Cycle() {
             int instructionAddress = hardware.programCounter.GetBits().GetAsSignedInt();
             var pcBits = hardware.memory.LoadBits(instructionAddress, 32); // fetch
             IInstruction instruction = InstructionParser.parseInstruction(pcBits); // decode
-            instruction.Run(hardware, pcBits);  // execute
-            Bits increment = hardware.alu.AddSigned(hardware.programCounter.GetBits(), one);
-            hardware.programCounter.SetBits(increment);
+            try {
+                instruction.Run(hardware, pcBits);  // execute
+                Bits increment = hardware.alu.AddSigned(hardware.programCounter.GetBits(), one);
+                hardware.programCounter.SetBits(increment);
+                return true;
+            } catch(Exception e) {
+                Console.WriteLine(e);
+                return false;
+            }
         }
 
     }

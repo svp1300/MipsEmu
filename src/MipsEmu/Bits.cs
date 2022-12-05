@@ -68,8 +68,10 @@ namespace MipsEmu {
 
       
         /// <summary>Get the value as an unsigned integer.</summary>
-        public int GetAsUnsignedInt() {
-            int sum = 0;
+        public int GetAsUnsignedInt() => (int) GetAsUnsignedLong();
+        /// <summary>Get the value as an unsigned long.</summary>
+        public long GetAsUnsignedLong() {
+            long sum = 0;
             for (int index = 0; index < values.Length; index++) {
                 if (values[index]) {
                     sum += (int) Math.Pow(2, index);
@@ -79,8 +81,10 @@ namespace MipsEmu {
         }
 
         /// <summary>Get the signed integer value using two's compliment.</summary>
-        public int GetAsSignedInt() {
-            int sum = 0;
+        public int GetAsSignedInt() => (int) GetAsSignedLong();
+        /// <summary>Get the signed long value using two's compliment.</summary>
+        public long GetAsSignedLong() {
+            long sum = 0;
             if (values[values.Length - 1]) {
                 sum = -((int) Math.Pow(2, values.Length - 1));
             }
@@ -90,7 +94,17 @@ namespace MipsEmu {
             }
             return sum;
         }
-
+        public void SetFromUnsignedLong(long number) {
+            for (int i = values.Length - 1; i >= 0 && number > 0; i++) {
+                var pow = (long) Math.Pow(2, i);
+                var fits = number - pow >= 0;
+                values[i] = fits;
+                if (fits) {
+                    number -= pow;
+                }
+            }
+        }
+        
         public void SetFromSignedInt(int number) {
             // TODO simplify
             if (number < 0) {

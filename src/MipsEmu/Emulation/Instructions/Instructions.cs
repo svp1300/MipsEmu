@@ -42,6 +42,19 @@ namespace MipsEmu.Emulation.Instructions {
         public abstract void Run(Hardware hardware, Bits rsValue, Bits rtValue, int rd);
     }
 
+    public abstract class InstructionJType : IInstruction {
+
+        public void Run(Hardware hardware, Bits instruction) {
+            long highOrder = 0xF0000000 & hardware.programCounter.GetBits().GetAsUnsignedLong();
+            long psuedoAddress = instruction.GetBits(0, 26).GetAsSignedLong();
+            var address = new Bits(32);
+            address.SetFromUnsignedLong((psuedoAddress >> 2) + highOrder);
+            Run(hardware, address);
+        }
+
+        public abstract void RunJump(Hardware hardware, Bits address);
+    }
+
     
 
     

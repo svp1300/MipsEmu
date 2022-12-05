@@ -13,7 +13,9 @@ namespace MipsEmu.Emulation.Instructions {
             {0b100011, new LoadWordInstruction()},
             {0b101000, new StoreHalfWordInstruction()},
             {0b101001, new StoreHalfWordInstruction()},
-            {0b101011, new StoreWordInstruction()}
+            {0b101011, new StoreWordInstruction()},
+            {0b000010, new JumpInstruction()},
+            {0b000011, new JumpAndLinkInstruction()}
         };
 
         private static readonly Dictionary<int,InstructionRType> FUNC_INSTRUCTIONS = new Dictionary<int, InstructionRType>{
