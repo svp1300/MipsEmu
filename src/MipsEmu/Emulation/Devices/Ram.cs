@@ -9,8 +9,8 @@ namespace MipsEmu.Emulation.Devices {
             memory = new Bits(memorySize);
         }
 
-        public void StoreBits(int address, Bits data) {
-            memory.SetBits(address, data);
+        public void StoreBits(int address, Bits data, int amount) {
+            memory.SetBits(address, new Bits(data.Load(0, amount)));
         }
 
         public Bits LoadBits(int address, int size) {

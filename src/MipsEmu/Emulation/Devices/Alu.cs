@@ -4,7 +4,7 @@ namespace MipsEmu.Emulation.Devices {
 
     public class Alu {
 
-        public Bits Add(Bits a, Bits b) {
+        public Bits AddUnsigned(Bits a, Bits b) {
             bool[] aValue = a.GetValues();
             bool[] bValue = b.GetValues();
             if (aValue.Length != bValue.Length) {
@@ -22,6 +22,22 @@ namespace MipsEmu.Emulation.Devices {
                 return new Bits(result);
             }
         }
+
+        public Bits AddSigned(Bits a, Bits b) {
+            var aValue = a.GetAsSignedInt();
+            var bValue = b.GetAsSignedInt();
+            var result = new Bits(a.GetLength());
+            result.SetFromSignedInt(aValue + bValue);
+            return result;
+        }
+
+         public Bits SubtractSigned(Bits a, Bits b) {
+            var aValue = a.GetAsSignedInt();
+            var bValue = b.GetAsSignedInt();
+            var result = new Bits(a.GetLength());
+            result.SetFromSignedInt(aValue - bValue);
+            return result;
+         }
 
     }
 

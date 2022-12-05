@@ -6,7 +6,7 @@ namespace MipsEmu.Emulation.Instructions {
 
         /// <summary>Store the sum of $rs and $rt in $rd.</summary>
         public override void Run(Hardware hardware, Bits rsValue, Bits rtValue, int rd) {
-            Bits sum = hardware.alu.Add(rsValue, rtValue);
+            Bits sum = hardware.alu.AddSigned(rsValue, rtValue);
             hardware.registers.SetRegisterBits(rd, sum);
         }
     }

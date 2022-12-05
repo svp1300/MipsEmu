@@ -2,6 +2,14 @@ using MipsEmu.Emulation;
 
 namespace MipsEmu.Emulation.Registers {
 
+
+    public class ZeroRegister : Register {
+
+        public override void SetBits(Bits bits) {
+
+        }
+
+    }
     public class Register {
         private Bits data;
 
@@ -9,7 +17,7 @@ namespace MipsEmu.Emulation.Registers {
             data = new Bits(32);
         }
 
-        public void SetBits(Bits bits) {
+        public virtual void SetBits(Bits bits) {
             if (bits.GetLength() != 32) {
                 throw new Exception("Size mismatch between register and stored bits.");
             } else {

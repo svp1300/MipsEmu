@@ -11,11 +11,11 @@ namespace MipsEmu.Emulation.Instructions {
     }
 
     public abstract class InstructionIType : IInstruction {
-
+        public static readonly Interval RS_BITS = new Interval(16, 5);
         public void Run(Hardware hardware, Bits bits) {
             var imm = bits.GetBits(0, 16);
-            var rs = bits.GetSignedIntFromRange(16, 5);
-            var rt = bits.GetSignedIntFromRange(21, 5);
+            var rs = bits.GetUnsignedIntFromRange(16, 5);
+            var rt = bits.GetUnsignedIntFromRange(21, 5);
 
             Bits sourceValue = hardware.registers.GetRegisterBits(rs);
 
@@ -23,7 +23,7 @@ namespace MipsEmu.Emulation.Instructions {
         }
 
         public Bits CalculateStoreAddress(Hardware hardware, Bits rsValue, Bits imm) {
-            return hardware.alu.Add(rsValue, imm.SignExtend16());
+            return hardware.alu.AddSigned(rsValue, imm.SignExtend16());
         }
 
         public abstract void Run(Hardware hardware, Bits rsValue, int rt, Bits imm);
