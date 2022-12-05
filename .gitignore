@@ -1,0 +1,4 @@
+test/MipsEmuTest/obj
+test/MipsEmuTest/bin
+src/MipsEmu/bin
+src/MipsEmu/obj

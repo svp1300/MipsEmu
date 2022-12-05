@@ -4,9 +4,14 @@ using System.Text;
 namespace MipsEmu {
 
     public class Bits {
+        public static readonly Interval OPCODE_INTERVAL = new Interval(26, 6);
+        public static readonly Interval FUNC_INTERVAL = new Interval(0, 6);
+
         public static readonly int WORD_SIZE = 32;
         public static readonly int HALFWORD_SIZE = 16;
+
         private bool[] values;
+
 
         public Bits(int size) {
             values = new bool[size];
@@ -44,15 +49,22 @@ namespace MipsEmu {
                 return read;
             }
         }
-
+        
         public Bits GetBits(int offset, int size) {
             return new Bits(Load(offset, size));
         }
 
         /// <summary>Grabs a subset from the bits and returns the signed integer representation of that subset.</summary>
-        public int GetSignedIntFromRange(int offset, int size) {
-            return GetBits(offset, size).GetAsSignedInt();
-        }
+        public int GetSignedIntFromRange(int offset, int size) => GetBits(offset, size).GetAsSignedInt();
+
+        /// <summary>Grabs a subset from the bits and returns the signed integer representation of that subset.</summary>
+        public int GetSignedIntFromRange(Interval interval) => GetSignedIntFromRange(interval.start, interval.length);
+
+        /// <summary>Grabs a subset from the bits and returns the unsigned integer representation of that subset.</summary>
+        public int GetUnsignedIntFromRange(int offset, int duration) => GetBits(offset, duration).GetAsUnsignedInt();
+
+        /// <summary>Grabs a subset from the bits and returns the unsigned integer representation of that subset.</summary>
+        public int GetUnsignedIntFromRange(Interval interval) => GetUnsignedIntFromRange(interval.start, interval.length);
 
       
         /// <summary>Get the value as an unsigned integer.</summary>

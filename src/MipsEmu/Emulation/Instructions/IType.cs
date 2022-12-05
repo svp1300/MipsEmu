@@ -78,13 +78,5 @@ namespace MipsEmu.Emulation.Instructions {
         }
     }
 
-    public class SubImmediateInstruction : InstructionIType {
-
-        /// <summary>Subtract $rs and imm then store in rt.</summary>
-        public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
-            Bits result = hardware.alu.SubtractSigned(rsValue, imm);
-            hardware.registers.SetRegisterBits(rt, result);
-        }
-    }
 
 }

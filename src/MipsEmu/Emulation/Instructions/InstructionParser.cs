@@ -6,7 +6,7 @@ namespace MipsEmu.Emulation.Instructions {
 
     class InstructionParser {
         // Credit to https://opencores.org/projects/plasma/opcodes for the list of opcodes.
-        private static readonly Dictionary<int,IInstruction> opcodeInstructions = new Dictionary<int, IInstruction>{
+        private static readonly Dictionary<int,IInstruction> OPCODE_INSTRUCTIONS = new Dictionary<int, IInstruction>{
             {0b001000, new AddImmediateInstruction()},
             {0b100000, new LoadByteInstruction()},
             {0b100001, new LoadHalfWordInstruction()},
@@ -16,17 +16,18 @@ namespace MipsEmu.Emulation.Instructions {
             {0b101011, new StoreWordInstruction()}
         };
 
-        private static readonly Dictionary<int,InstructionRType> rType = new Dictionary<int, InstructionRType>{
+        private static readonly Dictionary<int,InstructionRType> FUNC_INSTRUCTIONS = new Dictionary<int, InstructionRType>{
             {0b100000, new AddInstruction()},
+            {0b100010, new SubtractInstruction()}
         };
 
-        public IInstruction parseInstruction(Bits instruction) {
+        public static IInstruction parseInstruction(Bits instruction) {
             int opcode = instruction.GetUnsignedIntFromRange(Bits.OPCODE_INTERVAL);
             if (opcode == 0) {
                 var func = instruction.GetUnsignedIntFromRange(Bits.FUNC_INTERVAL);
-                return opcodeInstructions[func];
+                return FUNC_INSTRUCTIONS[func];
             } else {
-                return rType[opcode];
+                return OPCODE_INSTRUCTIONS[opcode];
             }
         }
 
