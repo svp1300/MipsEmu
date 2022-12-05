@@ -33,15 +33,19 @@ namespace MipsEmu {
         public virtual bool Cycle() {
             int instructionAddress = hardware.programCounter.GetBits().GetAsSignedInt();
             var pcBits = hardware.memory.LoadBits(instructionAddress, 32); // fetch
-            IInstruction instruction = InstructionParser.parseInstruction(pcBits); // decode
-            try {
-                instruction.Run(hardware, pcBits);  // execute
-                Bits increment = hardware.alu.AddSigned(hardware.programCounter.GetBits(), one);
-                hardware.programCounter.SetBits(increment);
-                return true;
-            } catch(Exception e) {
-                Console.WriteLine(e);
+            IInstruction? instruction = InstructionParser.parseInstruction(pcBits); // decode
+            if (instruction == null) {
                 return false;
+            } else {
+                try {
+                    instruction.Run(hardware, pcBits);  // execute
+                    Bits increment = Alu.AddSigned(hardware.programCounter.GetBits(), one);
+                    hardware.programCounter.SetBits(increment);
+                    return true;
+                } catch(Exception e) {
+                    Console.WriteLine(e);
+                    return false;
+                }
             }
         }
 

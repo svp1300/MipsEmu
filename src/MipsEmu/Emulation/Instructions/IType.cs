@@ -1,5 +1,6 @@
-namespace MipsEmu.Emulation.Instructions {
+using MipsEmu.Emulation.Devices;
 
+namespace MipsEmu.Emulation.Instructions {
 
     public abstract class LoadInstruction : InstructionIType {  
 
@@ -12,6 +13,16 @@ namespace MipsEmu.Emulation.Instructions {
 
     }
 
+    public class LoadUpperImmediateInstruction : InstructionIType {
+        
+        public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
+            var upper = new Bits(32);
+            upper.Store(16, imm.GetValues());
+            hardware.registers.SetRegisterBits(rt, upper);
+        }
+
+    }
+    
     public class LoadByteInstruction : LoadInstruction {
 
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
@@ -73,10 +84,28 @@ namespace MipsEmu.Emulation.Instructions {
 
         /// <summary>Add $rs and imm then store in rt.</summary>
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
-            Bits sum = hardware.alu.AddSigned(rsValue, imm);
+            Bits sum = Alu.AddSigned(rsValue, imm);
             hardware.registers.SetRegisterBits(rt, sum);
         }
     }
 
+    public class AndImmediateInstruction : InstructionIType {
 
+        public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
+            hardware.registers.SetRegisterBits(rt, Alu.And(rsValue, imm));
+        }
+    }
+
+    public class OrImmediateInstruction : InstructionIType {
+        public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
+            hardware.registers.SetRegisterBits(rt, Alu.Or(rsValue, imm));
+        }
+    }
+
+    public class XorImmediateInstruction : InstructionIType {
+
+        public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
+            hardware.registers.SetRegisterBits(rt, Alu.Xor(rsValue, imm));
+        }
+    }
 }

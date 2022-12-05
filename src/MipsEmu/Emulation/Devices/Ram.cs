@@ -14,7 +14,7 @@ namespace MipsEmu.Emulation.Devices {
         }
 
         public Bits LoadBits(int address, int size) {
-            return memory.GetBits(address, size);
+            return memory.LoadBits(address, size);
         }
 
         public void StoreSequence(IEnumerable<Bits> data) {

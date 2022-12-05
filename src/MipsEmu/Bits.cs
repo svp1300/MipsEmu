@@ -50,18 +50,22 @@ namespace MipsEmu {
             }
         }
         
-        public Bits GetBits(int offset, int size) {
+        public Bits LoadBits(int offset, int size) {
             return new Bits(Load(offset, size));
         }
 
+        public bool GetBit(int index) {
+            return values[index];
+        }
+
         /// <summary>Grabs a subset from the bits and returns the signed integer representation of that subset.</summary>
-        public int GetSignedIntFromRange(int offset, int size) => GetBits(offset, size).GetAsSignedInt();
+        public int GetSignedIntFromRange(int offset, int size) => LoadBits(offset, size).GetAsSignedInt();
 
         /// <summary>Grabs a subset from the bits and returns the signed integer representation of that subset.</summary>
         public int GetSignedIntFromRange(Interval interval) => GetSignedIntFromRange(interval.start, interval.length);
 
         /// <summary>Grabs a subset from the bits and returns the unsigned integer representation of that subset.</summary>
-        public int GetUnsignedIntFromRange(int offset, int duration) => GetBits(offset, duration).GetAsUnsignedInt();
+        public int GetUnsignedIntFromRange(int offset, int duration) => LoadBits(offset, duration).GetAsUnsignedInt();
 
         /// <summary>Grabs a subset from the bits and returns the unsigned integer representation of that subset.</summary>
         public int GetUnsignedIntFromRange(Interval interval) => GetUnsignedIntFromRange(interval.start, interval.length);
@@ -96,7 +100,7 @@ namespace MipsEmu {
         }
         public void SetFromUnsignedLong(long number) {
             for (int i = values.Length - 1; i >= 0 && number > 0; i++) {
-                var pow = (long) Math.Pow(2, i);
+                long pow = (long) Math.Pow(2, i);
                 var fits = number - pow >= 0;
                 values[i] = fits;
                 if (fits) {
@@ -104,13 +108,13 @@ namespace MipsEmu {
                 }
             }
         }
-        
-        public void SetFromSignedInt(int number) {
-            // TODO simplify
+
+        public void SetFromSignedLong(long number) {
+            // TODO test & simplify
             if (number < 0) {
                 values[values.Length - 1] = true;
                 for (int p = values.Length - 2; p >= 0 && number < 0; p--) {
-                    var power = (int) Math.Pow(2, p);
+                    long power = (long) Math.Pow(2, p);
                     var leq = number + power <= 0;
                     values[p] = leq;
                     if (leq) {
@@ -119,7 +123,7 @@ namespace MipsEmu {
                 }
             } else {
                 for (int p = values.Length - 2; p >= 0 && number > 0; p--) {
-                    var power = (int) Math.Pow(2, p);
+                    long power = (long) Math.Pow(2, p);
                     var geq = number - power >= 0;
                     values[p] = geq;
                     if (geq) {
@@ -129,6 +133,9 @@ namespace MipsEmu {
             }
         }
 
+        public void SetFromSignedInt(int number) => SetFromSignedLong((int) number);
+        public void SetFromUnsignedInt(int number) => SetFromUnsignedLong((int) number);
+        
         public override string ToString() {
             var builder = new StringBuilder(values.Length);
             for(int bit = values.Length - 1; bit >= 0; bit--) {
