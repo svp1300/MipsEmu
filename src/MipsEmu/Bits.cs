@@ -110,27 +110,25 @@ namespace MipsEmu {
         }
 
         public void SetFromSignedLong(long number) {
-            // TODO test & simplify
             if (number < 0) {
                 values[values.Length - 1] = true;
-                for (int p = values.Length - 2; p >= 0 && number < 0; p--) {
-                    long power = (long) Math.Pow(2, p);
-                    var leq = number + power <= 0;
-                    values[p] = leq;
-                    if (leq) {
-                        number += power;
-                    }
-                }
+                number = (long) Math.Pow(2, values.Length - 1) - Math.Abs(number);
             } else {
-                for (int p = values.Length - 2; p >= 0 && number > 0; p--) {
-                    long power = (long) Math.Pow(2, p);
-                    var geq = number - power >= 0;
-                    values[p] = geq;
-                    if (geq) {
-                        number += power;
-                    }
+                values[values.Length - 1] = false;
+            }
+            int p;
+            for (p = values.Length - 2; p >= 0 && number > 0; p--) {
+                var pow = (long) Math.Pow(2, p);
+                var geq = number - pow >= 0;
+                values[p] = geq;
+                if (geq) {
+                    number -= pow;
                 }
             }
+            while(p >= 0) {
+                values[p--] = false;
+            }
+            Console.WriteLine(this);
         }
 
         public void SetFromSignedInt(int number) => SetFromSignedLong((int) number);
