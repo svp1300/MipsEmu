@@ -98,14 +98,20 @@ namespace MipsEmu {
             }
             return sum;
         }
+
         public void SetFromUnsignedLong(long number) {
-            for (int i = values.Length - 1; i >= 0 && number > 0; i++) {
+            int i = values.Length - 1;
+            while(i >= 0 && number > 0) {
                 long pow = (long) Math.Pow(2, i);
                 var fits = number - pow >= 0;
                 values[i] = fits;
                 if (fits) {
                     number -= pow;
                 }
+                i--;
+            }
+            while(i >= 0) {
+                values[i--] = false;
             }
         }
 
@@ -128,7 +134,6 @@ namespace MipsEmu {
             while(p >= 0) {
                 values[p--] = false;
             }
-            Console.WriteLine(this);
         }
 
         public void SetFromSignedInt(int number) => SetFromSignedLong((int) number);

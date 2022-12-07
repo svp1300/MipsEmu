@@ -100,4 +100,15 @@ public class BitsTest {
         Console.WriteLine(cut);
         TestTools.CheckEquivalent(new bool[]{false, true, false, true, false}, cut.GetValues());
     }
+
+    [Fact]
+    public void SetFromUnsignedIntTest() {
+        var cut = new Bits(4);
+        cut.SetFromUnsignedInt(0);
+        TestTools.CheckEquivalent(new bool[]{false, false, false, false}, cut.GetValues());
+        cut.SetFromUnsignedInt(15);
+        TestTools.CheckEquivalent(new bool[]{true, true, true, true}, cut.GetValues());
+        cut.SetFromUnsignedInt(6);
+        TestTools.CheckEquivalent(new bool[]{false, true, true, false}, cut.GetValues());
+    }
 }
