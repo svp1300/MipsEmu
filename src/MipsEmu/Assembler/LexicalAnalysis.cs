@@ -1,7 +1,8 @@
 using System.Text.RegularExpressions;
 using MipsEmu;
-namespace MipsEmu.Assembler.Parser;
+namespace MipsEmu.Assembler;
 
+/// <summary>Structure representing lowest level tokens. Represents registers, comments, and various symbols. NOT to be confused with symbols from assembly.</summary>
 public struct Symbol {
     public string value;
     public SymbolType type;
@@ -16,6 +17,7 @@ public struct Symbol {
     }
 }
 
+/// <summary>Represents the lexical specification for a symbol and its categorization.</sumary>
 public struct SymbolForm {
     public SymbolType type;
     public string form;
@@ -32,8 +34,10 @@ public struct SymbolForm {
 }
 
 public enum SymbolType {
-    QUOTE, NUMBER, STRING, COMMENT, DOT, WHITESPACE, COLON, REGISTER, COMMA
+    QUOTE, NUMBER, STRING, COMMENT, DOT, WHITESPACE, COLON, REGISTER, COMMA, OPEN_PAREN, CLOSE_PAREN
 }
+
+/// <summary>Contains function(s) to break a string into lexical symbols.</summary>
 class LexicalAnalyzer {
     private static readonly List<SymbolForm> SYMBOL_FORMS = new List<SymbolForm>() {
         new SymbolForm(SymbolType.QUOTE, "\""), // regex, priority
@@ -44,14 +48,16 @@ class LexicalAnalyzer {
         new SymbolForm(SymbolType.STRING, "([A-z]|[0-9])+"),
         new SymbolForm(SymbolType.REGISTER, "\\$[A-z]{1,2}[0-9]?"),
         new SymbolForm(SymbolType.COLON, ":"),
-        new SymbolForm(SymbolType.COMMA, ",")
+        new SymbolForm(SymbolType.COMMA, ","),
+        new SymbolForm(SymbolType.OPEN_PAREN, "\\("),
+        new SymbolForm(SymbolType.CLOSE_PAREN, "\\)")
     };
 
     /// <summary>Traverses the string looking for the longest matches.</summary>
     /// <returns>Returns a list containing the longest symbol matches.</returns>
     /// <throws>ParseException when encountering text that cannot be parsed.</throws>
     /// <param name=text>The text to be broken into symbols.</param>
-    public static List<Symbol> FindSymbols(string text) {
+    public static Symbol[] FindSymbols(string text) {
         int position = 0;
         var symbols = new List<Symbol>();
         while (position < text.Length) {
@@ -73,34 +79,8 @@ class LexicalAnalyzer {
                 position += longestMatch.Length;
             }
         }
-        return symbols;
+        return symbols.ToArray();
         
-    }
-}
-
-public struct TokenForm {
-    private SymbolType[] form;
-    private Func<Symbol[], Token> generator;
-    
-    public TokenForm(SymbolType[] form, Func<Symbol[], Token> generator) {
-        this.form = form;
-        this.generator = generator;
-    }
-
-    public Token Create(Symbol[] symbols) {
-        return generator.Invoke(symbols);
-    }
-
-    public bool Matches(Symbol[] symbols, int begin) {
-        if (symbols.Length < form.Length) {
-            return false;
-        }
-        for(int s = 0; s < form.Length; s++) {
-            if (!form[s].Equals(symbols[begin + s])) {
-                return false;
-            }
-        }
-        return true;
     }
 }
 
