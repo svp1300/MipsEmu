@@ -61,7 +61,6 @@ class LexicalAnalyzer {
         int position = 0;
         var symbols = new List<Symbol>();
         while (position < text.Length) {
-            Console.WriteLine(position);
             string? longestMatch = null;
             SymbolType? longestMatchType = null;
             foreach(var form in SYMBOL_FORMS) {
@@ -72,7 +71,6 @@ class LexicalAnalyzer {
                 }
             }
             if (longestMatch == null || longestMatch.Length == 0 || longestMatchType == null) {
-                Console.WriteLine(text.Substring(position));
                 throw new ParseException("Failed to find symbol in remaining text.");
             } else {
                 symbols.Add(new Symbol(longestMatch, longestMatchType.Value));
