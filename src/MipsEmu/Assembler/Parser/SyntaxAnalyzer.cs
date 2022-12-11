@@ -3,6 +3,7 @@ namespace MipsEmu.Assembler;
 
 using System.Text;
 
+/// <summary>Marker for an assembly label.</summary>
 public struct Label {
     private string Name {get;}
     private int Line {get;}
@@ -17,12 +18,13 @@ public struct Label {
     }
 }
 
-public struct ParseResult {
+/// <summary>Contains the global names and both tokens and labels organized by whether they are for instructions or dot directives.</summary>
+public struct SyntaxParseResult {
     public List<Token> directiveTokens, instructionTokens;
     public List<Label> directiveLabels, instructionLabels;
     public List<string> globals;
 
-    public ParseResult() {
+    public SyntaxParseResult() {
         directiveTokens = new List<Token>();
         instructionTokens = new List<Token>();
         directiveLabels = new List<Label>();
@@ -54,6 +56,7 @@ public struct ParseResult {
 
 }
 
+/// <summary>Data structure used in parsing when finding and presenting the solution.</summary>
 public class ParseTreeNode {
     public ParseTreeNode? Parent {get;}
     public Token? Data {get;}
@@ -73,6 +76,7 @@ public class ParseTreeNode {
         return child;
     }
 }
+/// <summary>Tool that when given the language definitions of assembly code and a program, will tokenize it and split it into directives, instructions, and labels.</summary>
 public class SyntaxAnalyzer {
     private TokenFactory factory;
 
@@ -80,12 +84,18 @@ public class SyntaxAnalyzer {
         factory = new TokenFactory();
     }
 
-    public ParseResult BuildProgram(Symbol[] symbols) {
+    /// <summary>Runs the process of syntax analysis from the parse tree to token meaning.</summary>
+    /// <param name="symbols">The symbols found during a program's lexical analysis.</param>
+    /// <returns>A struct containing the results of the analysis.</returns>
+    public SyntaxParseResult BuildProgram(Symbol[] symbols) {
         ParseTreeNode root = BuildTree(symbols);
         List<Token> tokens = FindSolution(root);
         return SeparateTokens(tokens);
     } 
 
+    /// <summary>Takes the given symbols and creates a parse tree for use in analyzing the program.</summary>
+    /// <param name="symbols">The symbols found during a program's lexical analysis.</param>
+    /// <returns>The parse tree created by analyzing symbols.</returns>
     public ParseTreeNode BuildTree(Symbol[] symbols) {
         ParseTreeNode root = new ParseTreeNode(null);
         BuildTree(root, symbols, 0);
@@ -104,6 +114,9 @@ public class SyntaxAnalyzer {
         }
     }
 
+    /// <summary>Finds and returns the path from the root to the deepest leaf in the parse tree.</summary>
+    /// <param name="root">Root of the program's parse tree.</param>
+    /// <returns>Longest path in the parse tree.</returns>
     public List<Token> FindSolution(ParseTreeNode root) {
         var nodes = new Stack<Tuple<int, ParseTreeNode>>();
         var max = new Tuple<int, ParseTreeNode>(0, root);
@@ -129,9 +142,11 @@ public class SyntaxAnalyzer {
     }
 
 
-    /// <summary>Split tokens into Data and Text. Create symbol table.
-    public ParseResult SeparateTokens(List<Token> tokens) {
-        var result = new ParseResult();
+    /// <summary>Split tokens into Data, text, and labels. Applies effects of some dot directives.</summary>
+    /// <param name="tokens">A list of tokens from the parse tree's solution.</param>
+    /// <returns>A struct containing the results of the analysis.<returns>
+    public SyntaxParseResult SeparateTokens(List<Token> tokens) {
+        var result = new SyntaxParseResult();
         bool inText = true;
         for(int t = 0; t < tokens.Count; t++) {
             Token token = tokens[t];
@@ -150,7 +165,7 @@ public class SyntaxAnalyzer {
         return result;
     }
 
-    public void CreateLabel(ParseResult result, bool inText, Token token) {
+    public void CreateLabel(SyntaxParseResult result, bool inText, Token token) {
         string labelName = token.GetSymbol(0, true).value;
         if (inText) {
             result.instructionLabels.Add(new Label(labelName, result.instructionLabels.Count));
@@ -159,11 +174,11 @@ public class SyntaxAnalyzer {
         }
     }
 
-    public void ProcessInstructionToken(Token token, ParseResult result) {
+    public void ProcessInstructionToken(Token token, SyntaxParseResult result) {
         result.instructionTokens.Add(token);
     }
 
-    public void ProcessDirectiveToken(Token token, ref bool inText, ParseResult result) {
+    public void ProcessDirectiveToken(Token token, ref bool inText, SyntaxParseResult result) {
         result.directiveTokens.Add(token);
         token.UpdateAssemblerState(ref inText, result); // add globls and change data/text
     }
