@@ -1,12 +1,14 @@
 namespace MipsEmu.Assembler;
 
+using MipsEmu.Assembler.Tokens;
+
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 /// <summary>Marker for an assembly label.</summary>
 public struct Label {
     public string Name {get;}
-    public long Address {get;}
+    public long Address {get; set;}
 
     public Label(string name, long address) {
         Name = name;
@@ -34,10 +36,16 @@ public struct Label {
         }
         return null;
     }
+
+    public void AddAddressOffset(long amount) {
+        Address += amount;
+    }
+
 }
 
 /// <summary>Contains the global names and both tokens and labels organized by whether they are for instructions or dot directives.</summary>
 public class SyntaxParseResult {
+    
     public List<Token> directiveTokens, instructionTokens;
     public List<Label> directiveLabels, instructionLabels;
     public List<string> globals;
@@ -53,6 +61,14 @@ public class SyntaxParseResult {
         textLength = -1;
     }
 
+    public Label? GetLabel(string name, bool text) {
+        var searchedLabels = text ? instructionLabels : directiveLabels;
+        foreach (var label in searchedLabels) {
+            if (label.Name.Equals(name))
+                return label;
+        }
+        return null;
+    }
     
     public List<Label> GetExternalDataReferences() => GetExternalReferences(directiveLabels);
     public List<Label> GetExternalTextReferences() => GetExternalReferences(instructionLabels);
@@ -67,6 +83,7 @@ public class SyntaxParseResult {
         return external;
     }
 
+    
     public override string ToString() {
         var builder = new StringBuilder();
         builder.AppendLine("Instruction Tokens:");
@@ -91,13 +108,13 @@ public class SyntaxParseResult {
 
 }
 
-public class AssemblerState {
+public class AnalyzerState {
     public long DataAddress {get; set;}
     public long TextAddress {get; set;}
     public int Alignment {get; set;}
     public bool InText {get; set;}
 
-    public AssemblerState() {
+    public AnalyzerState() {
         DataAddress = 0;
         TextAddress = 0;
         Alignment = 0;
@@ -203,7 +220,7 @@ public class SyntaxAnalyzer {
     /// <returns>A struct containing the results of the analysis.<returns>
     public SyntaxParseResult SeparateTokens(List<Token> tokens) {
         var result = new SyntaxParseResult();
-        var state = new AssemblerState();
+        var state = new AnalyzerState();
 
         for(int t = 0; t < tokens.Count; t++) {
             Token token = tokens[t];
@@ -225,7 +242,7 @@ public class SyntaxAnalyzer {
         return result;
     }
 
-    public void CreateLabel(SyntaxParseResult result, AssemblerState state, Token token) {
+    public void CreateLabel(SyntaxParseResult result, AnalyzerState state, Token token) {
         string labelName = token.GetSymbol(0, true).value;
         if (state.InText) {
             result.instructionLabels.Add(new Label(labelName, state.TextAddress));
@@ -234,12 +251,12 @@ public class SyntaxAnalyzer {
         }
     }
 
-    public void ProcessInstructionToken(Token token, AssemblerState state, SyntaxParseResult result) {
+    public void ProcessInstructionToken(Token token, AnalyzerState state, SyntaxParseResult result) {
         result.instructionTokens.Add(token);
         state.TextAddress += 32;
     }
 
-    public void ProcessDirectiveToken(Token token, AssemblerState state, SyntaxParseResult result) {
+    public void ProcessDirectiveToken(Token token, AnalyzerState state, SyntaxParseResult result) {
         result.directiveTokens.Add(token);
         token.UpdateAssemblerState(state, result); // add globls and change data/text
         state.DataAddress += token.GetBitLength(state.Alignment);

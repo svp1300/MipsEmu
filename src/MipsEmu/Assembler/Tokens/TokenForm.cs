@@ -1,5 +1,5 @@
 
-namespace MipsEmu.Assembler;
+namespace MipsEmu.Assembler.Tokens;
 
 public interface ITokenForm {
 

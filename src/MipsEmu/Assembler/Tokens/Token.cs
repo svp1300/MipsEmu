@@ -1,4 +1,4 @@
-namespace MipsEmu.Assembler;
+namespace MipsEmu.Assembler.Tokens;
 
 public class TokenFactory {
     private Dictionary<ITokenForm, Func<Symbol[], Token>> templates;
@@ -83,7 +83,7 @@ public abstract class Token {
     // Data/
 
     public abstract long GetBitLength(int alignment);
-    public abstract void UpdateAssemblerState(AssemblerState state, SyntaxParseResult results);
+    public abstract void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results);
     public abstract TokenType GetTokenType();
     
 }
@@ -93,7 +93,7 @@ public class LabelToken : Token {
     public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.STRING, SymbolType.COLON}, true);
     public LabelToken(Symbol[] match) : base(match) { }
 
-    public override void UpdateAssemblerState(AssemblerState state, SyntaxParseResult results) {
+    public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) {
         throw new ParseException("Only dot directives can change the state of the assembler.");
     }
 
@@ -109,7 +109,7 @@ public class ArgumentlessDirectiveToken : Token {
     
     public ArgumentlessDirectiveToken(Symbol[] match) : base(match) { }
 
-    public override void UpdateAssemblerState(AssemblerState state, SyntaxParseResult results) {
+    public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) {
         string directive = GetSymbol(1, true).value.ToLower();
         if (directive.Equals("data"))
             state.InText = false;
@@ -145,7 +145,7 @@ public class NumberArgumentDirective : Token {
             return 0;
     }
 
-    public override void UpdateAssemblerState(AssemblerState state, SyntaxParseResult results) {
+    public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) {
         string directive = GetSymbol(1, true).value.ToLower();
         if (directive.Equals("align")) {
             state.Alignment = Int32.Parse(GetSymbol(2, true).value);
@@ -157,7 +157,7 @@ public class TextArgumentDirectiveToken : Token {
     public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.STRING, SymbolType.STRING}, true);
     public TextArgumentDirectiveToken(Symbol[] match) : base(match) { }
 
-    public override void UpdateAssemblerState(AssemblerState state, SyntaxParseResult results) {
+    public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) {
         string directive = GetSymbol(1, true).value.ToLower();
         if (directive.Equals("globl")) {
             results.globals.Add(GetSymbol(2, true).value);
