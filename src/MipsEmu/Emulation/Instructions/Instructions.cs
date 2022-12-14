@@ -33,10 +33,10 @@ namespace MipsEmu.Emulation.Instructions {
 
 
         public void Run(Hardware hardware, Bits bits) {
-            var rs = bits.LoadBits(21, 5);
-            var rt = bits.LoadBits(16, 5);
-            var rd = bits.GetSignedIntFromRange(11, 5);
-            Run(hardware, rs, rt, rd);
+            var rs = bits.GetUnsignedIntFromRange(21, 5);
+            var rt = bits.GetUnsignedIntFromRange(16, 5);
+            var rd = bits.GetUnsignedIntFromRange(11, 5);
+            Run(hardware, hardware.registers.GetRegisterBits(rs), hardware.registers.GetRegisterBits(rt), rd);
         }
 
         public abstract void Run(Hardware hardware, Bits rsValue, Bits rtValue, int rd);

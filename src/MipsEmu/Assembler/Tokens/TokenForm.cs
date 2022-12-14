@@ -55,21 +55,24 @@ public class FixedTokenForm : ITokenForm {
     public virtual int Match(Symbol[] symbols, int begin) {
         if (begin >= symbols.Length)
             return 0;
-        int s = 0;
+        int matchLength = 0;
         int skipped = 0;
-        while (s < form.Length) {
-            var current = symbols[begin + s + skipped];
+        while (matchLength < form.Length) {
+            if (begin + matchLength + skipped >= symbols.Length) {
+                return 0;
+            }
+            var current = symbols[begin + matchLength + skipped];
             if (ignoreWhitespace && current.type.Equals(SymbolType.WHITESPACE)) {
                 skipped++;
                 continue;
             }
-            if (!form[s].Equals(current.type)) {
+            if (!form[matchLength].Equals(current.type)) {
                 return 0;
             } else {
-                s++;
+                matchLength++;
             }
 
         }
-        return s + skipped;
+        return matchLength + skipped;
     }
 }

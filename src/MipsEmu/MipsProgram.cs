@@ -2,8 +2,6 @@ using MipsEmu.Emulation.Instructions;
 using MipsEmu.Emulation.Registers;
 using MipsEmu.Emulation.Devices;
 
-using System;
-
 namespace MipsEmu {
     
     public struct Hardware {
@@ -12,9 +10,9 @@ namespace MipsEmu {
         public Ram memory;
         public Alu alu;
 
-        public Hardware(int memorySize) {
+        public Hardware(long memorySize) {
             programCounter = new Register();
-            programCounter.SetFromSignedInt(Ram.TEXT_START);
+            programCounter.SetFromUnsignedLong(Ram.TEXT_START);
             registers = new RegisterFile();
             memory = new Ram(memorySize);
             alu = new Alu();
@@ -25,9 +23,15 @@ namespace MipsEmu {
         private Hardware hardware;
         private Bits one;
 
-        public MipsProgram(int memorySize) {
+        public MipsProgram(long memorySize) {
             hardware = new Hardware(memorySize);
-            one = new Bits(new bool[]{true}).SignExtend(31);
+            one = new Bits(new bool[]{true, false, false, false, false}).SignExtend(27);
+        }
+
+        public void LoadProgram(Bits text, Bits data) {
+            hardware.memory.StoreBits(Ram.TEXT_START, text);
+            hardware.memory.StoreBits(Ram.DATA_START, data);
+            hardware.registers.SetRegisterBits(31, new Bits(32));
         }
 
         public virtual bool Cycle() {
@@ -50,4 +54,5 @@ namespace MipsEmu {
         }
 
     }
+
 }

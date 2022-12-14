@@ -28,7 +28,9 @@ namespace MipsEmu.Emulation.Instructions {
             {0b100111, new NorInstruction()},
             {0b100110, new XorInstruction()},
             {0b100101, new OrInstruction()},
-            {0b100010, new SubtractInstruction()}
+            {0b100010, new SubtractInstruction()},
+            {0b001001, new JumpAndLinkRegisterInstruction()},
+            {0b001000, new JumpRegisterInstruction()},
         };
 
 

@@ -1,15 +1,20 @@
 namespace MipsEmu.Assembler;
 
-using MipsEmu.Emulation.Instructions;
+using MipsEmu.Assembler.Tokens;
 
-public class LinkedProgram  {
+public enum MemorySection {
+    DATA, TEXT
+}
+
+public class UnlinkedProgram  {
 
     private Dictionary<string, int> symbolTable;
 
     private List<SyntaxParseResult> programSections;
     private Dictionary<int, long> dataStartTable, textStartTable;
+    private long dataSum, textSum;
 
-    public LinkedProgram(List<SyntaxParseResult> programSections, Dictionary<string, int> symbolTable) {
+    public UnlinkedProgram(List<SyntaxParseResult> programSections, Dictionary<string, int> symbolTable) {
         symbolTable = new Dictionary<string, int>();
         dataStartTable = new Dictionary<int, long>();
         textStartTable = new Dictionary<int, long>();
@@ -29,12 +34,12 @@ public class LinkedProgram  {
     }
 
     public void AddStartAddressOffsets() {
-        long dataSum = 0;
-        long textSum = 0;
+        dataSum = 0;
+        textSum = 0;
         for (int programId = 0; programId < programSections.Count; programId++) {
-            // dataStartTable[programId] = dataSum;
-            // textStartTable[programId] = textSum;
             SyntaxParseResult programData = programSections[programId];
+            dataStartTable[programId] = dataSum;
+            textStartTable[programId] = textSum;
             dataSum += programData.dataLength;
             textSum += programData.textLength;
             foreach(var label in programData.directiveLabels) {
@@ -45,8 +50,17 @@ public class LinkedProgram  {
             }
         }
     }
+
+    public long GetDataLength() => dataSum;
+    public long GetTextLength() => textSum;
+
     public bool IsKnown(string labelName) => symbolTable.ContainsKey(labelName);
     
+    public long GetDataStartAddress(int sectionId) => dataStartTable[sectionId];
+    public long GetTextStartAddress(int sectionId) => textStartTable[sectionId];
+
+    public int GetSectionCount() => programSections.Count;
+
     public long GetAddress(string name, int sectionId, bool text) {
         Label? localLabel = programSections[sectionId].GetLabel(name, text);
         if (localLabel == null)
@@ -60,11 +74,20 @@ public class LinkedProgram  {
 
 }
 
+public class LinkedProgram {
+    public Bits text, data;
+
+    public LinkedProgram(Bits data, Bits text) {
+        this.data = data;
+        this.text = text;
+    }
+
+}
+
 public class ProgramLinker {
     private SyntaxAnalyzer syntaxAnalyzer;
     private List<SyntaxParseResult> programSections;
     private Dictionary<string, int> symbolTable;
-    private List<IInstruction> instructions;
     
     private object dataLock;
 
@@ -72,7 +95,6 @@ public class ProgramLinker {
         this.syntaxAnalyzer = syntaxAnalyzer;
         symbolTable = new Dictionary<string, int>();
         programSections = new List<SyntaxParseResult>();
-        instructions = new List<IInstruction>();
         dataLock = new object();
     }
 
@@ -102,12 +124,56 @@ public class ProgramLinker {
         }
     }
 
-    public LinkedProgram Parse(string[] program) {
+    public UnlinkedProgram Parse(string[] program) {
         foreach (string section in program) { // TODO async
             ParseSection(section);
         }
-        return new LinkedProgram(programSections, symbolTable);
+        return new UnlinkedProgram(programSections, symbolTable);
     }
+    
+
+    public LinkedProgram Link(UnlinkedProgram unlinked) {
+        var data = new Bits(unlinked.GetDataLength());
+        var text = new Bits(unlinked.GetTextLength());
+        for (int sectionId = 0; sectionId < unlinked.GetSectionCount(); sectionId++) {
+            StoreTextSection(sectionId, unlinked, text);
+            StoreDataSection(sectionId, unlinked, data);
+        }
+        return new LinkedProgram(data, text);
+    }
+
+    private void StoreTextSection(int sectionId, UnlinkedProgram unlinked, Bits text) {
+        var textBitsList = new LinkedList<Bits>();
+        foreach (var textToken in programSections[sectionId].instructionTokens) {
+            textBitsList.AddLast(((InstructionToken) textToken).MakeValueBits(unlinked, sectionId));
+        }
+        long address = unlinked.GetTextStartAddress(sectionId);
+        while (textBitsList.Count > 0) {
+            var front = textBitsList.First;
+            text.Store(address, front.Value);
+            textBitsList.RemoveFirst();
+            address += 32;
+        }
+    }
+
+    private void StoreDataSection(int sectionId, UnlinkedProgram unlinked, Bits data) {
+        var dataBitsList = new LinkedList<Bits>();
+        foreach (var dataToken in programSections[sectionId].directiveTokens) {
+            dataBitsList.AddLast((dataToken).MakeValueBits(unlinked, sectionId));
+        }
+        long address = unlinked.GetTextStartAddress(sectionId);
+        while (dataBitsList.Count > 0) {
+            var front = dataBitsList.First;
+            if (front == null) {
+                throw new ParseException("Null value in data bits list.");
+            } else {
+                data.Store(address, front.Value);
+                dataBitsList.RemoveFirst();
+                address += front.Value.GetLength();
+            }
+        }
+    }
+
 
 
 }
