@@ -1,28 +1,47 @@
-
 namespace MipsEmu.Assembler;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 /// <summary>Marker for an assembly label.</summary>
 public struct Label {
-    private string Name {get;}
-    private int Line {get;}
+    public string Name {get;}
+    public long Address {get;}
 
-    public Label(string name, int line) {
+    public Label(string name, long address) {
         Name = name;
-        Line = line;
+        Address = address;
     }
 
     public override string ToString() {
-        return Name + ":" + Line;
+        return Name + ":" + Address;
+    }
+
+    public override bool Equals([NotNullWhen(true)] object? obj) {
+        if (obj is Label) {
+            return ((Label) obj).Name.Equals(Name);
+        } else {
+            return false;
+        }
+    }
+
+    public override int GetHashCode() => Name.GetHashCode();
+    
+    public static Label? FindLabel(string name, List<Label> labels) {
+        foreach(var l in labels) {
+            if (l.Name.Equals(name))
+                return l;
+        }
+        return null;
     }
 }
 
 /// <summary>Contains the global names and both tokens and labels organized by whether they are for instructions or dot directives.</summary>
-public struct SyntaxParseResult {
+public class SyntaxParseResult {
     public List<Token> directiveTokens, instructionTokens;
     public List<Label> directiveLabels, instructionLabels;
     public List<string> globals;
+    public long dataLength, textLength;
 
     public SyntaxParseResult() {
         directiveTokens = new List<Token>();
@@ -30,6 +49,22 @@ public struct SyntaxParseResult {
         directiveLabels = new List<Label>();
         instructionLabels = new List<Label>();
         globals = new List<string>();
+        dataLength = -1;
+        textLength = -1;
+    }
+
+    
+    public List<Label> GetExternalDataReferences() => GetExternalReferences(directiveLabels);
+    public List<Label> GetExternalTextReferences() => GetExternalReferences(instructionLabels);
+
+    private List<Label> GetExternalReferences(List<Label> labels) {
+        var external = new List<Label>();
+        foreach(var labelName in globals) {
+            Label? matchedLabel = Label.FindLabel(labelName, labels);
+            if (matchedLabel != null)
+                external.Add(matchedLabel.Value);
+        }
+        return external;
     }
 
     public override string ToString() {
@@ -54,6 +89,20 @@ public struct SyntaxParseResult {
         return builder.ToString();
     }
 
+}
+
+public class AssemblerState {
+    public long DataAddress {get; set;}
+    public long TextAddress {get; set;}
+    public int Alignment {get; set;}
+    public bool InText {get; set;}
+
+    public AssemblerState() {
+        DataAddress = 0;
+        TextAddress = 0;
+        Alignment = 0;
+        InText = true;
+    }
 }
 
 /// <summary>Data structure used in parsing when finding and presenting the solution.</summary>
@@ -128,6 +177,13 @@ public class SyntaxAnalyzer {
                 current.Item2.Children.ForEach((n) => nodes.Push(new Tuple<int, ParseTreeNode>(depth, n)));
             } else if (current.Item1 > max.Item1) { // no deeper
                 max = current;
+            } else if (current.Item1 == max.Item1) {
+                var maxData = max.Item2.Data;
+                var currentData = max.Item2.Data;
+                if (maxData != null && currentData != null && maxData.GetSymbolCount(true) < currentData.GetSymbolCount(true)) {
+                    max =  current;
+                }
+                        
             }
         }
         return BuildLeafSolution(max.Item2);
@@ -136,7 +192,7 @@ public class SyntaxAnalyzer {
     private List<Token> BuildLeafSolution(ParseTreeNode leaf) {
         var solution = new LinkedList<Token>();
         for (ParseTreeNode? current = leaf; current != null && current.Data != null; current = current.Parent) {
-            solution.AddLast(current.Data);
+            solution.AddFirst(current.Data);
         }
         return solution.ToList<Token>();
     }
@@ -147,40 +203,46 @@ public class SyntaxAnalyzer {
     /// <returns>A struct containing the results of the analysis.<returns>
     public SyntaxParseResult SeparateTokens(List<Token> tokens) {
         var result = new SyntaxParseResult();
-        bool inText = true;
+        var state = new AssemblerState();
+
         for(int t = 0; t < tokens.Count; t++) {
             Token token = tokens[t];
+            Console.WriteLine(token);
             switch(token.GetTokenType()) {
                 case TokenType.INSTRUCTION:
-                    ProcessInstructionToken(token, result);
+                    ProcessInstructionToken(token, state, result);
                     break;
                 case TokenType.DIRECTIVE:
-                    ProcessDirectiveToken(token, ref inText, result);
+                    ProcessDirectiveToken(token, state, result);
                     break;
                 case TokenType.LABEL:
-                    CreateLabel(result, inText, token);
+                    CreateLabel(result, state, token);
                     break;
             }
         }
+        result.dataLength = state.DataAddress;
+        result.textLength = state.TextAddress;
         return result;
     }
 
-    public void CreateLabel(SyntaxParseResult result, bool inText, Token token) {
+    public void CreateLabel(SyntaxParseResult result, AssemblerState state, Token token) {
         string labelName = token.GetSymbol(0, true).value;
-        if (inText) {
-            result.instructionLabels.Add(new Label(labelName, result.instructionLabels.Count));
+        if (state.InText) {
+            result.instructionLabels.Add(new Label(labelName, state.TextAddress));
         } else {
-            result.directiveLabels.Add(new Label(labelName, result.directiveTokens.Count));
+            result.directiveLabels.Add(new Label(labelName, state.DataAddress));
         }
     }
 
-    public void ProcessInstructionToken(Token token, SyntaxParseResult result) {
+    public void ProcessInstructionToken(Token token, AssemblerState state, SyntaxParseResult result) {
         result.instructionTokens.Add(token);
+        state.TextAddress += 32;
     }
 
-    public void ProcessDirectiveToken(Token token, ref bool inText, SyntaxParseResult result) {
+    public void ProcessDirectiveToken(Token token, AssemblerState state, SyntaxParseResult result) {
         result.directiveTokens.Add(token);
-        token.UpdateAssemblerState(ref inText, result); // add globls and change data/text
+        token.UpdateAssemblerState(state, result); // add globls and change data/text
+        state.DataAddress += token.GetBitLength(state.Alignment);
     }
 
     private void PrintRemaining(Symbol[] symbols, int start) {
