@@ -273,6 +273,21 @@ public class SyntaxAnalyzer {
         factory.AddTokenForm(form, generator);
     }
 
+    public static SyntaxAnalyzer CreateDefaultSyntaxAnalyzer() {
+        var syntaxAnalyzer = new SyntaxAnalyzer();
+        syntaxAnalyzer.AddTokenForm(TypeIInstructionToken.FORM, (s) => new TypeIInstructionToken(s));
+        syntaxAnalyzer.AddTokenForm(TypeRInstructionToken.FORM, (s) => new TypeRInstructionToken(s));
+
+        syntaxAnalyzer.AddTokenForm(ArgumentlessDirectiveToken.FORM, (s) => new ArgumentlessDirectiveToken(s));
+        syntaxAnalyzer.AddTokenForm(TextArgumentDirectiveToken.FORM, (s) => new TextArgumentDirectiveToken(s));
+        syntaxAnalyzer.AddTokenForm(NumberArgumentDirective.FORM, (s) => new NumberArgumentDirective(s));
+        syntaxAnalyzer.AddTokenForm(MemoryInstructionToken.FORM, (s) => new MemoryInstructionToken(s));
+        syntaxAnalyzer.AddTokenForm(SingleRegisterInstruction.FORM, (s) => new SingleRegisterInstruction(s));
+        syntaxAnalyzer.AddTokenForm(LabelToken.FORM, (s) => new LabelToken(s));
+        syntaxAnalyzer.AddTokenForm(LoadImmediateInstructionToken.FORM, (s) => new LoadImmediateInstructionToken(s));
+        syntaxAnalyzer.AddTokenForm(SyscallInstructionToken.FORM, (s) => new SyscallInstructionToken(s));
+        return syntaxAnalyzer;
+    }
 }
 
 

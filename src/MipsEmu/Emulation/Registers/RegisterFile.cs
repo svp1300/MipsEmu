@@ -2,6 +2,9 @@
 namespace MipsEmu.Emulation.Registers {
 
     public class RegisterFile {
+        public static readonly Dictionary<string, int> REGISTER_INDICES = new Dictionary<string, int>() {
+
+        };
         public static readonly int RA_INDEX = 31;
         private Register[] registers;
 

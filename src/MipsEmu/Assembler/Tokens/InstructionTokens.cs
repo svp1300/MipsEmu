@@ -141,3 +141,51 @@ public class MemoryInstructionToken : InstructionToken {
         return instruction;
     }
 }
+
+public class SingleRegisterInstruction : InstructionToken {    
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.STRING, SymbolType.REGISTER}, true);
+    public SingleRegisterInstruction(Symbol[] match) : base(match) { }
+
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+        var instruction = new Bits(32);
+        string func = GetSymbol(0, true).value.ToLower();
+        instruction.Store(0, FUNC_INSTRUCTION_BITS[func]);
+        if (func.Equals("jalr")) {
+            instruction.Store(11, REGISTER_BITS["$ra"]);
+            instruction.Store(21, REGISTER_BITS[GetSymbolString(1)]);
+        } else if(func.Equals("jr")) {
+            instruction.Store(21, REGISTER_BITS[GetSymbolString(1)]);
+        }
+        return instruction;
+    }
+}
+
+public class LoadImmediateInstructionToken : InstructionToken {
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.STRING, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.NUMBER}, true);
+    public LoadImmediateInstructionToken(Symbol[] match) : base(match) { }
+
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+        Bits instruction = new Bits(32);
+        instruction.Store(26, InstructionToken.OPCODE_INSTRUCTION_BITS["addi"]);
+        var register = InstructionToken.REGISTER_BITS[GetSymbolString(1)];
+        instruction.Store(21, register);
+        instruction.Store(16, register);   
+        Bits imm = new Bits(16);
+        imm.SetFromSignedLong(long.Parse(GetSymbolString(3)));
+        instruction.Store(0, imm);
+        return instruction;
+    }
+
+}
+
+public class SyscallInstructionToken : InstructionToken {
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.STRING}, true);
+    public SyscallInstructionToken(Symbol[] match) : base(match) { }
+
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+        Bits instruction = new Bits(32);
+        
+        return instruction;
+    }
+
+}

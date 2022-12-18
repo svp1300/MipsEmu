@@ -1,6 +1,7 @@
 namespace MipsEmu.Assembler;
 
-using MipsEmu.Emulation.Instructions;
+using MipsEmu.Assembler.Tokens;
+using System.Text;
 
 public class LinkedProgram  {
 
@@ -58,6 +59,25 @@ public class LinkedProgram  {
         }
     }
 
+    private void AddProgramToString(int sectionId, StringBuilder builder) {
+        var program = programSections[sectionId];
+        long textAddress = 0;
+        builder.AppendLine("~~~~SECTION #" + sectionId + "~~~~");
+        foreach (var textLine in program.instructionTokens) {
+            builder.AppendLine(textAddress + "\t" + "TEXT" + "\t" + textLine);
+            textAddress += textLine.GetBitLength(2);
+        }
+    }
+
+    public override string ToString() {
+        var builder = new StringBuilder();
+        for(int sectionId = 0; sectionId < programSections.Count; sectionId++) {
+            AddProgramToString(sectionId, builder);
+            builder.AppendLine();
+        }
+        return builder.ToString();
+    }
+
 }
 
 public class ProgramLinker {
@@ -102,11 +122,55 @@ public class ProgramLinker {
         }
     }
 
-    public LinkedProgram Parse(string[] program) {
+    public UnlinkedProgram Parse(string[] program) {
+        ParseSection("j main li $v0, 10 syscall"); // enter and exit first
         foreach (string section in program) { // TODO async
             ParseSection(section);
         }
         return new LinkedProgram(programSections, symbolTable);
+    }
+    
+    public LinkedProgram Link(UnlinkedProgram unlinked) {
+        var data = new Bits(unlinked.GetDataLength());
+        var text = new Bits(unlinked.GetTextLength());
+        for (int sectionId = 0; sectionId < unlinked.GetSectionCount(); sectionId++) {
+            StoreTextSection(sectionId, unlinked, text);
+            StoreDataSection(sectionId, unlinked, data);
+        }
+        return new LinkedProgram(data, text);
+    }
+
+    private void StoreTextSection(int sectionId, UnlinkedProgram unlinked, Bits text) {
+        var textBitsList = new LinkedList<Bits>();
+        foreach (var textToken in programSections[sectionId].instructionTokens) {
+            textBitsList.AddLast(((InstructionToken) textToken).MakeValueBits(unlinked, sectionId));
+        }
+        long address = unlinked.GetTextStartAddress(sectionId);
+        while (textBitsList.Count > 0) {
+            var front = textBitsList.First;
+            text.Store(address, front.Value);
+            textBitsList.RemoveFirst();
+            address += 32;
+        }
+    }
+
+    private void StoreDataSection(int sectionId, UnlinkedProgram unlinked, Bits data) {
+        Console.WriteLine(unlinked);
+        var dataBitsList = new LinkedList<Bits>();
+        foreach (var dataToken in programSections[sectionId].directiveTokens) {
+            dataBitsList.AddLast((dataToken).MakeValueBits(unlinked, sectionId));
+        }
+        long address = unlinked.GetTextStartAddress(sectionId);
+        while (dataBitsList.Count > 0) {
+            var front = dataBitsList.First;
+            if (front == null) {
+                throw new ParseException("Null value in data bits list.");
+            } else {
+                data.Store(address, front.Value);
+                dataBitsList.RemoveFirst();
+                address += front.Value.GetLength();
+            }
+        }
     }
 
 
