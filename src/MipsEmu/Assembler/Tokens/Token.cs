@@ -51,7 +51,7 @@ public abstract class Token {
         var result = new Symbol[end - start];
         int index = 0;
         int skip = 0;
-        while (index < end && index + skip < match.Length) {
+        while (index < end) {
             if (ignoreWhitespace && match[index + skip].type.Equals(SymbolType.WHITESPACE)) {
                 skip++;
             } else {
@@ -67,8 +67,6 @@ public abstract class Token {
     public Symbol GetSymbol(int location, bool ignoreWhitespace) {
         return GetSymbols(location, location + 1, ignoreWhitespace)[0];
     }
-
-    public abstract Bits MakeValueBits(UnlinkedProgram sections, int sectionId);
 
     public string GetSymbolString(int index, Boolean ignoreWhitespace) => GetSymbol(index, ignoreWhitespace).value;
     public string GetSymbolString(int index) => GetSymbolString(index, true);
@@ -99,9 +97,80 @@ public class LabelToken : Token {
         throw new ParseException("Only dot directives can change the state of the assembler.");
     }
 
-    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
-        throw new NotImplementedException();
-    }
     public override long GetBitLength(int alignment) => 0;
     public override TokenType GetTokenType() => TokenType.LABEL;
 }
+
+
+
+
+public class ArgumentlessDirectiveToken : Token {
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.STRING}, true); // .data
+    
+    public ArgumentlessDirectiveToken(Symbol[] match) : base(match) { }
+
+    public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) {
+        string directive = GetSymbol(1, true).value.ToLower();
+        if (directive.Equals("data"))
+            state.InText = false;
+        else if (directive.Equals("text"))
+            state.InText = true; 
+    }
+    
+    public override long GetBitLength(int alignment) => 0;
+    public override TokenType GetTokenType() => TokenType.DIRECTIVE;
+}
+
+
+public class NumberArgumentDirective : Token {
+    public static readonly ITokenForm FORM = new CompositeTokenForm(new ITokenForm[] {
+        new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.STRING, SymbolType.NUMBER}, true),
+        new RepeatableTokenForm(new SymbolType[] {SymbolType.COMMA, SymbolType.NUMBER}, true)
+    });
+
+    public NumberArgumentDirective(Symbol[] symbols) : base(symbols) { }
+
+    public override TokenType GetTokenType() => TokenType.DIRECTIVE;
+
+    public override long GetBitLength(int alignment) {
+        string directive = GetSymbol(1, true).value.ToLower();
+        int symbolCount = GetSymbolCount(true);
+        if (directive.Equals("byte"))
+            return 8 * ((symbolCount - 1)/2);
+        else if (directive.Equals("half"))
+            return 16 * ((symbolCount - 1)/2);
+        else if (directive.Equals("word"))
+            return 32 * ((symbolCount - 1)/2);
+        else
+            return 0;
+    }
+
+    public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) {
+        string directive = GetSymbol(1, true).value.ToLower();
+        if (directive.Equals("align")) {
+            state.Alignment = Int32.Parse(GetSymbol(2, true).value);
+        }
+
+    }
+}
+public class TextArgumentDirectiveToken : Token {
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.STRING, SymbolType.STRING}, true);
+    public TextArgumentDirectiveToken(Symbol[] match) : base(match) { }
+
+    public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) {
+        string directive = GetSymbol(1, true).value.ToLower();
+        if (directive.Equals("globl")) {
+            results.globals.Add(GetSymbol(2, true).value);
+        }
+    }
+
+    public override long GetBitLength(int alignment) {
+        return 0;
+    }
+    
+    public override TokenType GetTokenType() => TokenType.DIRECTIVE;
+}
+
+public class SingleRegisterInstruction {}
+
+

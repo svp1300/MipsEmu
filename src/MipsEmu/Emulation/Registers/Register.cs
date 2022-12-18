@@ -29,8 +29,8 @@ namespace MipsEmu.Emulation.Registers {
             return data;
         }
 
-        public void SetFromUnsignedLong(long value) {
-            data.SetFromSignedLong(value);
+        public void SetFromSignedInt(int value) {
+            // TODO implement
         }
     }
 }

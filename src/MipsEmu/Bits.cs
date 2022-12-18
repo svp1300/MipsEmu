@@ -12,45 +12,44 @@ namespace MipsEmu {
         private bool[] values;
 
 
-        public Bits(long size) {
+        public Bits(int size) {
             values = new bool[size];
         }
 
         public Bits(bool[] values) {
             this.values = new bool[values.Length];
-            for (long l = 0; l < values.Length; l++) {
-                this.values[l] = values[l];
+            for (int i = 0; i < values.Length; i++) {
+                this.values[i] = values[i];
             }
         }
 
-        public void Store(long offset, bool[] bits) {
+        public void Store(int offset, bool[] bits) {
             if (offset < 0 || offset + bits.Length > values.Length) {
                 throw new IndexOutOfRangeException("Specified bit(s) are out of the available range.");
             } else {
-                for (long b = 0; b < bits.Length; b++) {
+                for (int b = 0; b < bits.Length; b++) {
                     values[offset + b] = bits[b];
                 }
             }
         }
 
-        public void Store(long offset, Bits bits) => Store(offset, bits.GetValues());
+        public void SetBits(int offset, Bits bits) {
+            Store(offset, bits.values);
+        }
 
-        public void SetBits(long offset, Bits bits) => Store(offset, bits.values);
-        
-
-        public bool[] Load(long offset, long size) {
+        public bool[] Load(int offset, int size) {
             if (offset < 0 || offset + size > values.Length) {
                 throw new IndexOutOfRangeException("Specified bit(s) are out of the available range.");
             } else {
                 bool[] read = new bool[size];
-                for (long b = 0; b < size; b++) {
+                for (int b = 0; b < size; b++) {
                     read[b] = values[b + offset];
                 }
                 return read;
             }
         }
         
-        public Bits LoadBits(long offset, int size) {
+        public Bits LoadBits(int offset, int size) {
             return new Bits(Load(offset, size));
         }
 
@@ -76,7 +75,7 @@ namespace MipsEmu {
         /// <summary>Get the value as an unsigned long.</summary>
         public long GetAsUnsignedLong() {
             long sum = 0;
-            for (long index = 0; index < values.Length; index++) {
+            for (int index = 0; index < values.Length; index++) {
                 if (values[index]) {
                     sum += (int) Math.Pow(2, index);
                 }
@@ -92,7 +91,7 @@ namespace MipsEmu {
             if (values[values.Length - 1]) {
                 sum = -((int) Math.Pow(2, values.Length - 1));
             }
-            for (long index = 0; index <= values.Length - 2; index++) {
+            for (int index = 0; index <= values.Length - 2; index++) {
                 if (values[index])
                     sum += (int) Math.Pow(2, index);
             }
@@ -157,7 +156,7 @@ namespace MipsEmu {
             return SignExtend(16);
         }
         
-        public long GetLength() {
+        public int GetLength() {
             return values.Length;
         }
   

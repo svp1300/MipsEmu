@@ -4,16 +4,12 @@ namespace MipsEmu;
 
 using MipsEmu.Assembler;
 
-using MipsEmu.Emulation.Devices;
-
-using MipsEmu.Assembler.Tokens;
-
 public sealed class Program {
 
     public static void Main(string[] args) {
         var text = "main:\n\tjr $ra";
         text = "main: addi $t0, $t0, 43 jr $ra";
-        text = ".data values:.byte 5,4,3, 2, 1 beep: .word 16.text .globl main main: addi $t0, $t0, 43 add $t0, $t0, $t1 sub $t4, $s0, $t1 jr $ra";
+        // text = ".data values:.byte 5,4,3, 2, 1 beep: .word 16.text .globl main main: addi $t0, $t0, 43 add $t0, $t0, $t1 sub $t4, $s0, $t1 jr $ra";
         
         var syntaxAnalyzer = SyntaxAnalyzer.CreateDefaultSyntaxAnalyzer();
         var assembler = new ProgramLinker(syntaxAnalyzer);
@@ -53,11 +49,6 @@ public sealed class Program {
     }
 
     public static void AssembleProgram(string[] args) {
-        string programPath;
-        if (args.Length == 2) {
-            programPath = "./";
-        } else if (args.Length > 2) {
-            
-        }
+
     }
 }
