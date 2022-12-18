@@ -284,6 +284,8 @@ public class SyntaxAnalyzer {
         syntaxAnalyzer.AddTokenForm(MemoryInstructionToken.FORM, (s) => new MemoryInstructionToken(s));
         syntaxAnalyzer.AddTokenForm(SingleRegisterInstruction.FORM, (s) => new SingleRegisterInstruction(s));
         syntaxAnalyzer.AddTokenForm(LabelToken.FORM, (s) => new LabelToken(s));
+        syntaxAnalyzer.AddTokenForm(LoadImmediateInstructionToken.FORM, (s) => new LoadImmediateInstructionToken(s));
+        syntaxAnalyzer.AddTokenForm(SyscallInstructionToken.FORM, (s) => new SyscallInstructionToken(s));
         return syntaxAnalyzer;
     }
 }

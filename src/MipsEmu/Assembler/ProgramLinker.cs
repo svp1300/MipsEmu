@@ -1,6 +1,7 @@
 namespace MipsEmu.Assembler;
 
 using MipsEmu.Assembler.Tokens;
+using System.Text;
 
 public enum MemorySection {
     DATA, TEXT
@@ -72,6 +73,25 @@ public class UnlinkedProgram  {
         }
     }
 
+    private void AddProgramToString(int sectionId, StringBuilder builder) {
+        var program = programSections[sectionId];
+        long textAddress = 0;
+        builder.AppendLine("~~~~SECTION #" + sectionId + "~~~~");
+        foreach (var textLine in program.instructionTokens) {
+            builder.AppendLine(textAddress + "\t" + "TEXT" + "\t" + textLine);
+            textAddress += textLine.GetBitLength(2);
+        }
+    }
+
+    public override string ToString() {
+        var builder = new StringBuilder();
+        for(int sectionId = 0; sectionId < programSections.Count; sectionId++) {
+            AddProgramToString(sectionId, builder);
+            builder.AppendLine();
+        }
+        return builder.ToString();
+    }
+
 }
 
 public class LinkedProgram {
@@ -125,6 +145,7 @@ public class ProgramLinker {
     }
 
     public UnlinkedProgram Parse(string[] program) {
+        ParseSection("j main li $v0, 10 syscall"); // enter and exit first
         foreach (string section in program) { // TODO async
             ParseSection(section);
         }
@@ -157,6 +178,7 @@ public class ProgramLinker {
     }
 
     private void StoreDataSection(int sectionId, UnlinkedProgram unlinked, Bits data) {
+        Console.WriteLine(unlinked);
         var dataBitsList = new LinkedList<Bits>();
         foreach (var dataToken in programSections[sectionId].directiveTokens) {
             dataBitsList.AddLast((dataToken).MakeValueBits(unlinked, sectionId));

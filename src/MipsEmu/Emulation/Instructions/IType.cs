@@ -108,4 +108,6 @@ namespace MipsEmu.Emulation.Instructions {
             hardware.registers.SetRegisterBits(rt, Alu.Xor(rsValue, imm));
         }
     }
+
+
 }

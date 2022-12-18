@@ -41,6 +41,7 @@ namespace MipsEmu {
             if (instruction == null) {
                 return false;
             } else {
+                Console.WriteLine(instruction);
                 try {
                     instruction.Run(hardware, pcBits);  // execute
                     Bits increment = Alu.AddSigned(hardware.programCounter.GetBits(), one);
