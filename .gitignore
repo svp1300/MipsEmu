@@ -1,4 +1,5 @@
 test/MipsEmuTest/obj
 test/MipsEmuTest/bin
+src/MipsEmu/.vscode
 src/MipsEmu/bin
 src/MipsEmu/obj
