@@ -52,6 +52,8 @@ public abstract class InstructionToken : Token {
         {"lbu", IntBits(0b100100)},
         {"lh", IntBits(0b100001)},
         {"lw", IntBits(0b100011)},
+        {"j", IntBits(0b000010)},
+        {"jal", IntBits(0b000011)}
 
     };
     public static readonly Dictionary<string, bool[]> REGISTER_BITS = new Dictionary<string, bool[]>() {
@@ -108,7 +110,7 @@ public abstract class InstructionToken : Token {
 
 public class TypeRInstructionToken : InstructionToken {
     
-    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.STRING, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.REGISTER}, true); // add $rs, $rt, $rd
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.REGISTER}, true); // add $rs, $rt, $rd
 
     public TypeRInstructionToken(Symbol[] match) : base(match) { }
 
@@ -123,7 +125,7 @@ public class TypeRInstructionToken : InstructionToken {
 
 }
 public class TypeIInstructionToken : InstructionToken {
-    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.STRING, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.NUMBER}, true); // addi $rs, $rt, imm
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.NUMBER}, true); // addi $rs, $rt, imm
     
     public TypeIInstructionToken(Symbol[] match) : base(match) { }
     
@@ -143,7 +145,7 @@ public class TypeIInstructionToken : InstructionToken {
 }
 
 public class JumpInstructionToken : InstructionToken {
-
+public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.NAME}, true);
     public JumpInstructionToken(Symbol[] match) : base(match) { }
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
@@ -158,7 +160,7 @@ public class JumpInstructionToken : InstructionToken {
     }
 }
 public class MemoryInstructionToken : InstructionToken {
-    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.STRING, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.NUMBER, SymbolType.OPEN_PAREN, SymbolType.REGISTER, SymbolType.CLOSE_PAREN}, true);
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.NUMBER, SymbolType.OPEN_PAREN, SymbolType.REGISTER, SymbolType.CLOSE_PAREN}, true);
     
     public MemoryInstructionToken(Symbol[] match) : base(match) { }
     
@@ -179,7 +181,7 @@ public class MemoryInstructionToken : InstructionToken {
 }
 
 public class SingleRegisterInstruction : InstructionToken {    
-    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.STRING, SymbolType.REGISTER}, true);
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.REGISTER}, true);
     public SingleRegisterInstruction(Symbol[] match) : base(match) { }
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
@@ -197,7 +199,7 @@ public class SingleRegisterInstruction : InstructionToken {
 }
 
 public class LoadImmediateInstructionToken : InstructionToken {
-    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.STRING, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.NUMBER}, true);
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.NUMBER}, true);
     public LoadImmediateInstructionToken(Symbol[] match) : base(match) { }
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
@@ -215,7 +217,7 @@ public class LoadImmediateInstructionToken : InstructionToken {
 }
 
 public class SyscallInstructionToken : InstructionToken {
-    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.STRING}, true);
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME}, true);
     public SyscallInstructionToken(Symbol[] match) : base(match) { }
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {

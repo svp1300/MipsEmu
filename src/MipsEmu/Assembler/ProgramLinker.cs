@@ -24,12 +24,14 @@ public class UnlinkedProgram  {
         AddStartAddressOffsets();
     }
 
-    public void CreateSymbolTable(List<Label> labels, int sectionId) {
-        foreach(var l in labels) {
-            if (symbolTable.ContainsKey(l.Name)) {
-                throw new ParseException("Duplicate global symbol: " + l.Name);
-            } else {
-                symbolTable.Add(l.Name, sectionId);
+    public void CreateSymbolTable() {
+        for(int sectionId = 0; sectionId < programSections.Count; sectionId++) {
+            foreach(string labelName in programSections[sectionId].globals) {
+                if (symbolTable.ContainsKey(labelName)) {
+                    throw new ParseException("Duplicate global symbol: " + labelName);
+                } else {
+                    symbolTable.Add(labelName, sectionId);
+                }
             }
         }
     }
@@ -41,14 +43,10 @@ public class UnlinkedProgram  {
             SyntaxParseResult programData = programSections[programId];
             dataStartTable[programId] = dataSum;
             textStartTable[programId] = textSum;
+            programData.directiveLabels.ForEach((l) => l.AddAddressOffset(dataSum));
+            programData.instructionLabels.ForEach((l) => l.AddAddressOffset(textSum));
             dataSum += programData.dataLength;
             textSum += programData.textLength;
-            foreach(var label in programData.directiveLabels) {
-                label.AddAddressOffset(dataSum);
-            }
-            foreach(var label in programData.instructionLabels) {
-                label.AddAddressOffset(textSum);
-            }
         }
     }
 
@@ -64,12 +62,12 @@ public class UnlinkedProgram  {
 
     public long GetAddress(string name, int sectionId, bool text) {
         Label? localLabel = programSections[sectionId].GetLabel(name, text);
-        if (localLabel == null)
+        if (localLabel == null && symbolTable.ContainsKey(name))
             localLabel = programSections[symbolTable[name]].GetLabel(name, text);
         if (localLabel == null)
             throw new ParseException("Unknown label: " + name);
         else {
-            return localLabel.Value.Address;
+            return localLabel.GetAddress();
         }
     }
 
@@ -145,7 +143,7 @@ public class ProgramLinker {
     }
 
     public UnlinkedProgram Parse(string[] program) {
-        ParseSection("j main li $v0, 10 syscall"); // enter and exit first
+        // ParseSection("j main li $v0, 10 syscall"); // enter and exit first
         foreach (string section in program) { // TODO async
             ParseSection(section);
         }
@@ -156,6 +154,7 @@ public class ProgramLinker {
     public LinkedProgram Link(UnlinkedProgram unlinked) {
         var data = new Bits(unlinked.GetDataLength());
         var text = new Bits(unlinked.GetTextLength());
+        unlinked.CreateSymbolTable();
         for (int sectionId = 0; sectionId < unlinked.GetSectionCount(); sectionId++) {
             StoreTextSection(sectionId, unlinked, text);
             StoreDataSection(sectionId, unlinked, data);
@@ -178,7 +177,6 @@ public class ProgramLinker {
     }
 
     private void StoreDataSection(int sectionId, UnlinkedProgram unlinked, Bits data) {
-        Console.WriteLine(unlinked);
         var dataBitsList = new LinkedList<Bits>();
         foreach (var dataToken in programSections[sectionId].directiveTokens) {
             dataBitsList.AddLast((dataToken).MakeValueBits(unlinked, sectionId));
@@ -188,10 +186,12 @@ public class ProgramLinker {
             var front = dataBitsList.First;
             if (front == null) {
                 throw new ParseException("Null value in data bits list.");
-            } else {
+            } else if (front.Value.GetLength() > 0) {
                 data.Store(address, front.Value);
                 dataBitsList.RemoveFirst();
                 address += front.Value.GetLength();
+            } else {
+                dataBitsList.RemoveFirst();
             }
         }
     }

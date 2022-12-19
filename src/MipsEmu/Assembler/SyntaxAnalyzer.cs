@@ -6,17 +6,17 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 /// <summary>Marker for an assembly label.</summary>
-public struct Label {
+public class Label {
     public string Name {get;}
-    public long Address {get; set;}
+    private long address;
 
     public Label(string name, long address) {
         Name = name;
-        Address = address;
+        this.address = address;
     }
 
     public override string ToString() {
-        return Name + ":" + Address;
+        return Name + ":" + address;
     }
 
     public override bool Equals([NotNullWhen(true)] object? obj) {
@@ -38,8 +38,10 @@ public struct Label {
     }
 
     public void AddAddressOffset(long amount) {
-        Address += amount;
+        address += amount;
     }
+
+    public long GetAddress() => address;
 
 }
 
@@ -78,7 +80,7 @@ public class SyntaxParseResult {
         foreach(var labelName in globals) {
             Label? matchedLabel = Label.FindLabel(labelName, labels);
             if (matchedLabel != null)
-                external.Add(matchedLabel.Value);
+                external.Add(matchedLabel);
         }
         return external;
     }
@@ -189,21 +191,23 @@ public class SyntaxAnalyzer {
         nodes.Push(max);
         while (nodes.Count > 0) {
             var current = nodes.Pop();
-            if (current.Item2.Children.Count > 0) {
-                int depth = current.Item1 + 1;
-                current.Item2.Children.ForEach((n) => nodes.Push(new Tuple<int, ParseTreeNode>(depth, n)));
+            if (max == null) {
+                current = max;
+            } else if (current.Item2.Children.Count > 0) {
+                foreach(var child in current.Item2.Children) {
+                    int childLength = 0;
+                    if (child.Data != null)
+                        childLength = current.Item1 + child.Data.GetSymbolCount(true);
+                    nodes.Push(new Tuple<int, ParseTreeNode>(childLength, child));
+                }
             } else if (current.Item1 > max.Item1) { // no deeper
                 max = current;
-            } else if (current.Item1 == max.Item1) {
-                var maxData = max.Item2.Data;
-                var currentData = max.Item2.Data;
-                if (maxData != null && currentData != null && maxData.GetSymbolCount(true) < currentData.GetSymbolCount(true)) {
-                    max =  current;
-                }
-                        
             }
         }
-        return BuildLeafSolution(max.Item2);
+        if (max == null)
+            throw new ParseException("Unable to find solution to parse tree.");
+        else    
+            return BuildLeafSolution(max.Item2);
     }
 
     private List<Token> BuildLeafSolution(ParseTreeNode leaf) {
@@ -286,6 +290,7 @@ public class SyntaxAnalyzer {
         syntaxAnalyzer.AddTokenForm(LabelToken.FORM, (s) => new LabelToken(s));
         syntaxAnalyzer.AddTokenForm(LoadImmediateInstructionToken.FORM, (s) => new LoadImmediateInstructionToken(s));
         syntaxAnalyzer.AddTokenForm(SyscallInstructionToken.FORM, (s) => new SyscallInstructionToken(s));
+        syntaxAnalyzer.AddTokenForm(JumpInstructionToken.FORM, (s) => new JumpInstructionToken(s));
         return syntaxAnalyzer;
     }
 }

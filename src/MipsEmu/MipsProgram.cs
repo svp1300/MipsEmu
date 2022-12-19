@@ -34,6 +34,7 @@ namespace MipsEmu {
             hardware.registers.SetRegisterBits(31, new Bits(32));
         }
 
+        
         public virtual bool Cycle() {
             int instructionAddress = hardware.programCounter.GetBits().GetAsSignedInt();
             var pcBits = hardware.memory.LoadBits(instructionAddress, 32); // fetch
@@ -41,7 +42,6 @@ namespace MipsEmu {
             if (instruction == null) {
                 return false;
             } else {
-                Console.WriteLine(instruction);
                 try {
                     instruction.Run(hardware, pcBits);  // execute
                     Bits increment = Alu.AddSigned(hardware.programCounter.GetBits(), one);

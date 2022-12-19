@@ -92,7 +92,7 @@ public abstract class Token {
 
 
 public class LabelToken : Token {
-    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.STRING, SymbolType.COLON}, true);
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.COLON}, true);
     public LabelToken(Symbol[] match) : base(match) { }
 
     public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) {

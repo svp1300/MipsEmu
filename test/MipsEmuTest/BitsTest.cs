@@ -79,25 +79,23 @@ public class BitsTest {
     [Fact]
     public void GetUnsignedIntTest() {
         var cut = new Bits(new bool[] {false, true, false, true});
-        Assert.Equal(10, cut.GetAsUnsignedInt());
+        Assert.Equal(5, cut.GetAsUnsignedInt());
         cut = new Bits(new bool[] {true, true, true, false});
-        Assert.Equal(7, cut.GetAsUnsignedInt());       
+        Assert.Equal(14, cut.GetAsUnsignedInt());       
     } 
 
     [Fact]
     public void SetFromSignedIntTest() {
         var cut = new Bits(5);
-        cut.SetFromSignedInt(5);
+        cut.SetFromSignedInt(5);  
+        TestTools.CheckEquivalent(new bool[]{false, false, true, false, true}, cut.GetValues());
+        cut.SetFromSignedInt(-16 + 4);
         TestTools.CheckEquivalent(new bool[]{true, false, true, false, false}, cut.GetValues());
-        cut.SetFromSignedInt(-4);
-        Console.WriteLine(cut);
+        cut.SetFromSignedInt(7);
         TestTools.CheckEquivalent(new bool[]{false, false, true, true, true}, cut.GetValues());
-        cut.SetFromSignedInt(-16);
-        TestTools.CheckEquivalent(new bool[]{false, false, false, false, true}, cut.GetValues());
         cut.SetFromSignedInt(0);
         TestTools.CheckEquivalent(new bool[]{false, false, false, false, false}, cut.GetValues());
         cut.SetFromSignedInt(10);
-        Console.WriteLine(cut);
         TestTools.CheckEquivalent(new bool[]{false, true, false, true, false}, cut.GetValues());
     }
 

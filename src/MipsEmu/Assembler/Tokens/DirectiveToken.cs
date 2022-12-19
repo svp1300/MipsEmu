@@ -2,7 +2,7 @@ namespace MipsEmu.Assembler.Tokens;
 
 
 public class ArgumentlessDirectiveToken : Token {
-    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.STRING}, true); // .data
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.NAME}, true); // .data
     
     public ArgumentlessDirectiveToken(Symbol[] match) : base(match) { }
 
@@ -25,7 +25,7 @@ public class ArgumentlessDirectiveToken : Token {
 
 public class NumberArgumentDirective : Token {
     public static readonly ITokenForm FORM = new CompositeTokenForm(new ITokenForm[] {
-        new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.STRING, SymbolType.NUMBER}, true),
+        new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.NAME, SymbolType.NUMBER}, true),
         new RepeatableTokenForm(new SymbolType[] {SymbolType.COMMA, SymbolType.NUMBER}, true)
     });
 
@@ -77,7 +77,7 @@ public class NumberArgumentDirective : Token {
     }
 }
 public class TextArgumentDirectiveToken : Token {
-    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.STRING, SymbolType.STRING}, true);
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.NAME, SymbolType.NAME}, true);
     public TextArgumentDirectiveToken(Symbol[] match) : base(match) { }
 
     public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) {

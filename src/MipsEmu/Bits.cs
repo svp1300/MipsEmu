@@ -86,7 +86,7 @@ namespace MipsEmu {
             long sum = 0;
             for (long index = 0; index < values.Length; index++) {
                 if (values[index]) {
-                    sum += (int) Math.Pow(2, index);
+                    sum += (int) Math.Pow(2, values.Length - index - 1);
                 }
             }
             return sum;
@@ -108,39 +108,41 @@ namespace MipsEmu {
         }
 
         public void SetFromUnsignedLong(long number) {
-            int i = values.Length - 1;
-            while(i >= 0 && number > 0) {
-                long pow = (long) Math.Pow(2, i);
+            int endianOffset = values.Length - 1;
+            int i = 0;
+            while(i < values.Length && number > 0) {
+                long pow = (long) Math.Pow(2, endianOffset - i);
                 var fits = number - pow >= 0;
                 values[i] = fits;
                 if (fits) {
                     number -= pow;
                 }
-                i--;
+                i++;
             }
-            while(i >= 0) {
-                values[i--] = false;
+            while(i < values.Length) {
+                values[i++] = false;
             }
         }
 
         public void SetFromSignedLong(long number) {
+            int endianOffset = values.Length - 1;
             if (number < 0) {
-                values[values.Length - 1] = true;
+                values[0] = true;
                 number = (long) Math.Pow(2, values.Length - 1) - Math.Abs(number);
             } else {
-                values[values.Length - 1] = false;
+                values[0] = false;
             }
             int p;
-            for (p = values.Length - 2; p >= 0 && number > 0; p--) {
-                var pow = (long) Math.Pow(2, p);
+            for (p = 1; p < values.Length && number > 0; p++) {
+                var pow = (long) Math.Pow(2, endianOffset - p);
                 var geq = number - pow >= 0;
                 values[p] = geq;
                 if (geq) {
                     number -= pow;
                 }
             }
-            while(p >= 0) {
-                values[p--] = false;
+            while(p < values.Length) {
+                values[p++] = false;
             }
         }
 
@@ -173,5 +175,10 @@ namespace MipsEmu {
             return values;
         }
 
+
+        public static int BitsToUnsignedInt(bool[] bits) =>  new Bits(bits).GetAsUnsignedInt();
+            
+
     }
+
 }

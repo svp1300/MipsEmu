@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using MipsEmu;
 namespace MipsEmu.Assembler;
@@ -15,6 +16,16 @@ public struct Symbol {
     public override string ToString() {
         return value + ": " + type;
     }
+
+    public override bool Equals([NotNullWhen(true)] object? obj) {
+        if (obj is Symbol) {
+            var other = (Symbol) obj;
+            return other.type.Equals(type) && other.value.Equals(value);
+        } else
+            return false;
+    }
+
+    public override int GetHashCode() => value.GetHashCode();
 }
 
 /// <summary>Represents the lexical specification for a symbol and its categorization.</sumary>
@@ -34,19 +45,20 @@ public struct SymbolForm {
 }
 
 public enum SymbolType {
-    QUOTE, NUMBER, STRING, COMMENT, DOT, WHITESPACE, COLON, REGISTER, COMMA, OPEN_PAREN, CLOSE_PAREN
+    QUOTE, NUMBER, NAME, COMMENT, DOT, WHITESPACE, COLON, REGISTER, COMMA, OPEN_PAREN, CLOSE_PAREN, STRING
 }
 
 /// <summary>Contains function(s) to break a string into lexical symbols.</summary>
-class LexicalAnalyzer {
+public class LexicalAnalyzer {
     private static readonly List<SymbolForm> SYMBOL_FORMS = new List<SymbolForm>() {
        // new SymbolForm(SymbolType.QUOTE, "\""), // regex, priority
         new SymbolForm(SymbolType.NUMBER, "[0-9]+"),
         new SymbolForm(SymbolType.COMMENT, "#.*\n"),
         new SymbolForm(SymbolType.DOT, "\\."),
         new SymbolForm(SymbolType.WHITESPACE, "\\s+"),
-        new SymbolForm(SymbolType.STRING, "([A-z]|[0-9])+"),
-        new SymbolForm(SymbolType.REGISTER, "\\$[A-z]{1,2}[0-9]?"),
+        new SymbolForm(SymbolType.STRING, "\\\"(\\\\\\\"|.)*\\\""),
+        new SymbolForm(SymbolType.NAME, "([A-z]|[0-9])+"),
+        new SymbolForm(SymbolType.REGISTER, "\\$([A-z]|[0-9])+"),
         new SymbolForm(SymbolType.COLON, ":"),
         new SymbolForm(SymbolType.COMMA, ","),
         new SymbolForm(SymbolType.OPEN_PAREN, "\\("),

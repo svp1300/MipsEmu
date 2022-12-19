@@ -4,6 +4,7 @@ namespace MipsEmu.Assembler.Tokens;
 public interface ITokenForm {
 
     int Match(Symbol[] symbols, int begin);
+    bool ShouldStop(int matchLength);
 
 }
 public class CompositeTokenForm : ITokenForm {
@@ -16,10 +17,16 @@ public class CompositeTokenForm : ITokenForm {
     public int Match(Symbol[] symbols, int begin) {
         int matchLength = 0;
         foreach(var form in tokenForms) {
-            matchLength += form.Match(symbols, begin + matchLength);
+            var subMatch = form.Match(symbols, begin + matchLength);
+            if (form.ShouldStop(subMatch))
+                return 0;
+            else
+                matchLength += subMatch;
         }
         return matchLength;
     }
+    
+    public bool ShouldStop(int matchLength) => matchLength == 0;
 }
 
 public class RepeatableTokenForm : FixedTokenForm {
@@ -34,6 +41,9 @@ public class RepeatableTokenForm : FixedTokenForm {
         }
         return length;
     }
+
+
+    public new bool ShouldStop(int matchLength) => false;
 
 }
 public class FixedTokenForm : ITokenForm {
@@ -75,4 +85,6 @@ public class FixedTokenForm : ITokenForm {
         }
         return matchLength + skipped;
     }
+
+    public bool ShouldStop(int matchLength) => matchLength == 0;
 }
