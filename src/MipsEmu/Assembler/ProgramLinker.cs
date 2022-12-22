@@ -143,7 +143,7 @@ public class ProgramLinker {
     }
 
     public UnlinkedProgram Parse(string[] program) {
-        // ParseSection("j main li $v0, 10 syscall"); // enter and exit first
+        ParseSection("jal main li $v0, 10 syscall"); // enter and exit first
         foreach (string section in program) { // TODO async
             ParseSection(section);
         }

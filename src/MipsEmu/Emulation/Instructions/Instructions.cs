@@ -46,9 +46,9 @@ namespace MipsEmu.Emulation.Instructions {
 
         public void Run(Hardware hardware, Bits instruction) {
             long highOrder = 0xF00000 & hardware.programCounter.GetBits().GetAsUnsignedLong();
-            long psuedoAddress = instruction.LoadBits(0, 26).GetAsSignedLong();
+            long psuedoAddress = instruction.LoadBits(0, 26).GetAsUnsignedLong();
             var address = new Bits(32);
-            address.SetFromUnsignedLong((psuedoAddress >> 2) + highOrder);
+            address.SetFromUnsignedLong((psuedoAddress << 2) + highOrder);
             RunJump(hardware, address);
         }
 

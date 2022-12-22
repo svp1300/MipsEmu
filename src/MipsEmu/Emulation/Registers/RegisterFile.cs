@@ -1,3 +1,4 @@
+using System.Text;
 
 namespace MipsEmu.Emulation.Registers {
 
@@ -29,6 +30,16 @@ namespace MipsEmu.Emulation.Registers {
             } else {
                 registers[index].SetBits(bits);
             }
+        }
+
+        public override string ToString() {
+            var builder = new StringBuilder();
+            builder.AppendLine("Register File:");
+            for (int register = 0; register < 32; register++) {
+                var registerValue = GetRegisterBits(register).GetAsUnsignedLong();
+                builder.AppendLine($"\t{register}:\t{registerValue:X}");
+            }
+            return builder.ToString();
         }
         
         

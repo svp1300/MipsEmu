@@ -156,6 +156,22 @@ namespace MipsEmu {
             }
             return builder.ToString();
         }
+
+        public override bool Equals(object? obj) {
+            if (obj is Bits) {
+                var otherBits = (Bits) obj;
+                if (otherBits.GetLength() != GetLength())
+                    return false;
+                else {
+                    for (int index = 0; index < GetLength(); index++) {
+                        if (otherBits.values[index] != values[index])
+                            return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
         
         public Bits SignExtend(int amount) {
             var result = new Bits(GetLength() + amount);

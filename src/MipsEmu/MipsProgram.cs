@@ -4,11 +4,12 @@ using MipsEmu.Emulation.Devices;
 
 namespace MipsEmu {
     
-    public struct Hardware {
+    public class Hardware {
         public Register programCounter;
         public RegisterFile registers;
         public Ram memory;
         public Alu alu;
+        public bool exit;
 
         public Hardware(long memorySize) {
             programCounter = new Register();
@@ -16,42 +17,65 @@ namespace MipsEmu {
             registers = new RegisterFile();
             memory = new Ram(memorySize);
             alu = new Alu();
+            exit = false;
         }
     }
 
     public class MipsProgram {
         private Hardware hardware;
-        private Bits one;
+        private Bits pcIncrementBits;
 
         public MipsProgram(long memorySize) {
             hardware = new Hardware(memorySize);
-            one = new Bits(new bool[]{true, false, false, false, false}).SignExtend(27);
+            pcIncrementBits = new Bits(new bool[] {true, false, false, false, false, false}).SignExtend(26);
+
         }
 
         public void LoadProgram(Bits text, Bits data) {
             hardware.memory.StoreBits(Ram.TEXT_START, text);
             hardware.memory.StoreBits(Ram.DATA_START, data);
+            hardware.programCounter.SetFromUnsignedLong(Ram.TEXT_START);
             hardware.registers.SetRegisterBits(31, new Bits(32));
         }
 
-        
-        public virtual bool Cycle() {
-            int instructionAddress = hardware.programCounter.GetBits().GetAsSignedInt();
-            var pcBits = hardware.memory.LoadBits(instructionAddress, 32); // fetch
-            IInstruction? instruction = InstructionParser.parseInstruction(pcBits); // decode
-            if (instruction == null) {
-                return false;
-            } else {
-                try {
-                    instruction.Run(hardware, pcBits);  // execute
-                    Bits increment = Alu.AddSigned(hardware.programCounter.GetBits(), one);
-                    hardware.programCounter.SetBits(increment);
-                    return true;
-                } catch(Exception e) {
-                    Console.WriteLine(e);
-                    return false;
+        public void RunProgram() {
+            while (!hardware.exit) {
+                var result = Cycle();
+                if (!result) {
+                    Console.WriteLine("Runtime error!");
+                    break;
                 }
             }
+        }
+        
+        public virtual bool Cycle() {
+            long instructionAddress = hardware.programCounter.GetBits().GetAsUnsignedLong();
+            if (instructionAddress % 32 != 0) {
+                throw new Exception("Instructions must be on 32 aligned addresses.");
+            } else {
+                var pcBits = hardware.memory.LoadBits(instructionAddress, 32); // fetch
+                // if (hardware.skipPCIncrement) {
+                //     hardware.skipPCIncrement = false;
+                // } else {
+                    Bits increment = Alu.AddUnsigned(hardware.programCounter.GetBits(), pcIncrementBits);
+                    hardware.programCounter.SetBits(increment);
+                // }
+                IInstruction? instruction = InstructionParser.ParseInstruction(pcBits); // decode
+                Console.WriteLine(instructionAddress + "\t" + instruction);
+                if (instruction == null) {
+                    return false;
+                } else {
+                    try {
+                        instruction.Run(hardware, pcBits);  // execute
+                        Console.WriteLine(hardware.registers);
+                        return true;
+                    } catch(Exception e) {
+                        Console.WriteLine(e);
+                        return false;
+                    }
+                }
+            }
+            
         }
 
     }

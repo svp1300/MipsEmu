@@ -3,9 +3,8 @@ namespace MipsEmu.Emulation.Instructions;
 using MipsEmu.Emulation.Registers;
 
 public class SyscallInstruction : IInstruction {
-
     public void Run(Hardware hardware, Bits bits) {
-        var code = hardware.registers.GetRegisterBits(2).GetAsUnsignedInt();
+        var code = hardware.registers.GetRegisterBits(RegisterFile.REGISTER_INDICES["v0"]).GetAsUnsignedInt();
         switch (code) {
             case 1:
                 Console.WriteLine(hardware.registers.GetRegisterBits(RegisterFile.REGISTER_INDICES["a0"]).GetAsSignedInt());
@@ -23,6 +22,9 @@ public class SyscallInstruction : IInstruction {
                 input.SetFromSignedInt(Int32.Parse(Console.ReadLine()));
 
                 hardware.registers.SetRegisterBits(RegisterFile.REGISTER_INDICES["v0"], input);
+                break; 
+            case 10:
+                hardware.exit = true;
                 break;
             default:
                 Console.WriteLine("Unsupported syscall");

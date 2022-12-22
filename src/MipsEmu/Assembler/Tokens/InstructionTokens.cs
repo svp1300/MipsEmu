@@ -4,7 +4,7 @@ using MipsEmu.Emulation.Instructions;
 
 public abstract class InstructionToken : Token {
     public static readonly Dictionary<string, bool[]> FUNC_INSTRUCTION_BITS = new Dictionary<string, bool[]>() {
-        {"add", new bool[] {true, false, false, false, false, false}},
+        {"add", IntBits(32, 6)},
         {"addu", new bool[] {true, false, false, false, false, true}},
         {"and", new bool[] {true, false, false, true, false, false}},
         {"nor", new bool[] {true, false, false, true, true, true}},
@@ -31,14 +31,15 @@ public abstract class InstructionToken : Token {
         {"multu", new bool[] {false, true, true, false, false, true}},
 
         {"break", new bool[] {false, false, true, true, false, true}},
-        {"jalr", new bool[] {false, false, true, false, false, true}},
-        {"jr", IntBits(0b001000)},
+        {"jalr", IntBits(9, 6)},
+        {"jr", IntBits(8, 6)},
         // coprocessor unsupported
-        {"syscall", new bool[] {false, false, true, true, false, false}},
+        {"syscall", IntBits(12, 6)},
     };
 
     public static readonly Dictionary<string, bool[]> OPCODE_INSTRUCTION_BITS = new Dictionary<string, bool[]>() {
-        {"addi", IntBits(0b001000)},
+        {"addi", IntBits(8, 6)},
+        {"sub", IntBits(34, 6)},
         {"addiu", new bool[] {false, false, true, false, false, true}},
         {"andi", new bool[] {false, false, true, true, false, false}},
         {"lui", new bool[] {false, false, true, true, true, true}},
@@ -48,51 +49,52 @@ public abstract class InstructionToken : Token {
         {"xori", new bool[] {false, false, true, true, true, false}},
         {"beq", new bool[] {false, false, false, true, false, false}},
         {"bne", new bool[] {false, false, false, true, false, true}},
-        {"lb", IntBits(0b100000)},
-        {"lbu", IntBits(0b100100)},
-        {"lh", IntBits(0b100001)},
-        {"lw", IntBits(0b100011)},
-        {"j", IntBits(0b000010)},
-        {"jal", IntBits(0b000011)}
+        {"lb", IntBits(0b100000, 6)},
+        {"sw", IntBits(0b101011, 6)},
+        {"lbu", IntBits(0b100100, 6)},
+        {"lh", IntBits(0b100001, 6)},
+        {"lw", IntBits(35, 6)},
+        {"j", IntBits(2, 6)},
+        {"jal", IntBits(3, 6)}
 
     };
     public static readonly Dictionary<string, bool[]> REGISTER_BITS = new Dictionary<string, bool[]>() {
-        {"$zero", IntBits(0)}, {"$0", IntBits(0)},
-        {"$at", IntBits(1)}, {"$1", IntBits(1)},
-        {"$v0", IntBits(2)}, {"$2", IntBits(2)},
-        {"$v1", IntBits(3)}, {"$3", IntBits(3)},
-        {"$a0", IntBits(4)}, {"$4", IntBits(4)},
-        {"$a1", IntBits(5)}, {"$5", IntBits(5)},  
-        {"$a2", IntBits(6)}, {"$6", IntBits(6)},
-        {"$a3", IntBits(7)}, {"$7", IntBits(7)},
-        {"$t0", IntBits(8)}, {"$8", IntBits(8)},
-        {"$t1", IntBits(9)}, {"$9", IntBits(9)},
-        {"$t2", IntBits(10)}, {"$10", IntBits(10)},
-        {"$t3", IntBits(11)}, {"$11", IntBits(11)},
-        {"$t4", IntBits(12)}, {"$12", IntBits(12)},
-        {"$t5", IntBits(13)}, {"$13", IntBits(13)},
-        {"$t6", IntBits(14)}, {"$14", IntBits(14)},
-        {"$t7", IntBits(15)}, {"$15", IntBits(15)},
-        {"$s0", IntBits(16)}, {"$16", IntBits(16)},
-        {"$s1", IntBits(17)}, {"$17", IntBits(17)},
-        {"$s2", IntBits(18)}, {"$18", IntBits(18)},
-        {"$s3", IntBits(19)}, {"$19", IntBits(19)},
-        {"$s4", IntBits(20)}, {"$20", IntBits(20)},
-        {"$s5", IntBits(21)}, {"$21", IntBits(21)},
-        {"$s6", IntBits(22)}, {"$22", IntBits(22)},
-        {"$s7", IntBits(23)}, {"$23", IntBits(23)},
-        {"$t8", IntBits(24)}, {"$24", IntBits(24)},
-        {"$t9", IntBits(25)}, {"$25", IntBits(25)},
-        {"$k0", IntBits(26)}, {"$26", IntBits(26)},
-        {"$k1", IntBits(27)}, {"$27", IntBits(27)},
-        {"$gp", IntBits(28)}, {"$28", IntBits(28)},
-        {"$sp", IntBits(29)}, {"$29", IntBits(29)},
-        {"$fp", IntBits(30)}, {"$30", IntBits(30)},
-        {"$ra", IntBits(31)}, {"$31", IntBits(31)},
+        {"$zero", IntBits(0, 5)}, {"$0", IntBits(0, 5)},
+        {"$at", IntBits(1, 5)}, {"$1", IntBits(1, 5)},
+        {"$v0", IntBits(2, 5)}, {"$2", IntBits(2, 5)},
+        {"$v1", IntBits(3, 5)}, {"$3", IntBits(3, 5)},
+        {"$a0", IntBits(4, 5)}, {"$4", IntBits(4, 5)},
+        {"$a1", IntBits(5, 5)}, {"$5", IntBits(5, 5)},  
+        {"$a2", IntBits(6, 5)}, {"$6", IntBits(6, 5)},
+        {"$a3", IntBits(7, 5)}, {"$7", IntBits(7, 5)},
+        {"$t0", IntBits(8, 5)}, {"$8", IntBits(8, 5)},
+        {"$t1", IntBits(9, 5)}, {"$9", IntBits(9, 5)},
+        {"$t2", IntBits(10, 5)}, {"$10", IntBits(10, 5)},
+        {"$t3", IntBits(11, 5)}, {"$11", IntBits(11, 5)},
+        {"$t4", IntBits(12, 5)}, {"$12", IntBits(12, 5)},
+        {"$t5", IntBits(13, 5)}, {"$13", IntBits(13, 5)},
+        {"$t6", IntBits(14, 5)}, {"$14", IntBits(14, 5)},
+        {"$t7", IntBits(15, 5)}, {"$15", IntBits(15, 5)},
+        {"$s0", IntBits(16, 5)}, {"$16", IntBits(16, 5)},
+        {"$s1", IntBits(17, 5)}, {"$17", IntBits(17, 5)},
+        {"$s2", IntBits(18, 5)}, {"$18", IntBits(18, 5)},
+        {"$s3", IntBits(19, 5)}, {"$19", IntBits(19, 5)},
+        {"$s4", IntBits(20, 5)}, {"$20", IntBits(20, 5)},
+        {"$s5", IntBits(21, 5)}, {"$21", IntBits(21, 5)},
+        {"$s6", IntBits(22, 5)}, {"$22", IntBits(22, 5)},
+        {"$s7", IntBits(23, 5)}, {"$23", IntBits(23, 5)},
+        {"$t8", IntBits(24, 5)}, {"$24", IntBits(24, 5)},
+        {"$t9", IntBits(25, 5)}, {"$25", IntBits(25, 5)},
+        {"$k0", IntBits(26, 5)}, {"$26", IntBits(26, 5)},
+        {"$k1", IntBits(27, 5)}, {"$27", IntBits(27, 5)},
+        {"$gp", IntBits(28, 5)}, {"$28", IntBits(28, 5)},
+        {"$sp", IntBits(29, 5)}, {"$29", IntBits(29, 5)},
+        {"$fp", IntBits(30, 5)}, {"$30", IntBits(30, 5)},
+        {"$ra", IntBits(31, 5)}, {"$31", IntBits(31, 5)},
     };
 
-    private static bool[] IntBits(int value) {
-        var bits = new Bits(6);
+    private static bool[] IntBits(int value, int size) {
+        var bits = new Bits(size);
         bits.SetFromUnsignedInt(value);
         return bits.GetValues();
     }
@@ -180,13 +182,14 @@ public class MemoryInstructionToken : InstructionToken {
     }
 }
 
-public class SingleRegisterInstruction : InstructionToken {    
+public class SingleRegisterInstructionToken : InstructionToken {    
     public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.REGISTER}, true);
-    public SingleRegisterInstruction(Symbol[] match) : base(match) { }
+    public SingleRegisterInstructionToken(Symbol[] match) : base(match) { }
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
         var instruction = new Bits(32);
         string func = GetSymbol(0, true).value.ToLower();
+        
         instruction.Store(0, FUNC_INSTRUCTION_BITS[func]);
         if (func.Equals("jalr")) {
             instruction.Store(11, REGISTER_BITS["$ra"]);
@@ -194,6 +197,7 @@ public class SingleRegisterInstruction : InstructionToken {
         } else if(func.Equals("jr")) {
             instruction.Store(21, REGISTER_BITS[GetSymbolString(1)]);
         }
+        instruction.Store(26, new bool[] {false, false, false, false, false, false});
         return instruction;
     }
 }
@@ -222,7 +226,7 @@ public class SyscallInstructionToken : InstructionToken {
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
         Bits instruction = new Bits(32);
-        
+        instruction.Store(0, InstructionToken.FUNC_INSTRUCTION_BITS[GetSymbolString(0, true)]);
         return instruction;
     }
 

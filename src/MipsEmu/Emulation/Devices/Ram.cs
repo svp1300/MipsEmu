@@ -8,6 +8,9 @@ namespace MipsEmu.Emulation.Devices {
         public static readonly long USER_ACCESSIBLE_END = 0x80000000;
         private Bits memory;
 
+        public Ram(Bits wrap) {
+            memory = wrap;
+        }
         public Ram(long userMemorySize) {
             memory = new Bits(userMemorySize);
         }
