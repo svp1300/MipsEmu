@@ -14,7 +14,7 @@ public sealed class Program {
         // text = 
         // text = ".data values:.byte 5,4,3, 2, 1 beep: .word 16.text .globl main main: addi $t0, $t0, 43 add $t0, $t0, $t1 sub $t4, $s0, $t1 jr $ra";
         // text = ".globl main main: add $t0, $t0, $t1 add $t0, $t0, $t1 add $t0, $t0, $t1 lw $s0, 0($t0)";
-        var text = ".globl main main: sub $t0, $t0, 43 jr $ra";
+        var text = ".globl main main: sub $t0, $t0, 43 addi $sp, $sp, -8 syscall sw $s0, 0($sp) jr $ra";
         var syntaxAnalyzer = SyntaxAnalyzer.CreateDefaultSyntaxAnalyzer();
         var assembler = new ProgramLinker(syntaxAnalyzer);
         var unlinked = assembler.Parse(new string[]{text});

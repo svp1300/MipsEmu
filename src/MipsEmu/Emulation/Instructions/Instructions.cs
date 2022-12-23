@@ -55,8 +55,21 @@ namespace MipsEmu.Emulation.Instructions {
         public abstract void RunJump(Hardware hardware, Bits address);
     }
 
-    
+    public abstract class BranchingInstruction : IInstruction {
 
-    
+        public void Run(Hardware hardware, Bits bits) {
+            var imm = bits.LoadBits(0, 16);
+            imm.ShiftLeft(2);
+            var rsValue = bits.LoadBits(16, 5).GetAsSignedLong();
+            var rtValue = bits.LoadBits(21, 5).GetAsSignedLong();
+            if (ShouldBranch(rsValue, rtValue)) {
+                var pcBits = hardware.programCounter.GetBits();
+                hardware.programCounter.SetBits(Alu.AddUnsigned(pcBits, imm));
+            }
+        }
+
+        public abstract bool ShouldBranch(long rsValue, long rtValue);
+
+    }
 
 }

@@ -46,6 +46,7 @@ namespace MipsEmu {
                     break;
                 }
             }
+            Console.WriteLine(hardware.registers);
         }
         
         public virtual bool Cycle() {
@@ -57,8 +58,8 @@ namespace MipsEmu {
                 // if (hardware.skipPCIncrement) {
                 //     hardware.skipPCIncrement = false;
                 // } else {
-                    Bits increment = Alu.AddUnsigned(hardware.programCounter.GetBits(), pcIncrementBits);
-                    hardware.programCounter.SetBits(increment);
+                Bits increment = Alu.AddUnsigned(hardware.programCounter.GetBits(), pcIncrementBits);
+                hardware.programCounter.SetBits(increment);
                 // }
                 IInstruction? instruction = InstructionParser.ParseInstruction(pcBits); // decode
                 Console.WriteLine(instructionAddress + "\t" + instruction);
@@ -67,7 +68,6 @@ namespace MipsEmu {
                 } else {
                     try {
                         instruction.Run(hardware, pcBits);  // execute
-                        Console.WriteLine(hardware.registers);
                         return true;
                     } catch(Exception e) {
                         Console.WriteLine(e);

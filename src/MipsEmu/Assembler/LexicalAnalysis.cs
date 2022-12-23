@@ -9,7 +9,7 @@ namespace MipsEmu.Assembler;
 public class LexicalAnalyzer {
     private static readonly List<SymbolForm> SYMBOL_FORMS = new List<SymbolForm>() {
        // new SymbolForm(SymbolType.QUOTE, "\""), // regex, priority
-        new SymbolForm(SymbolType.NUMBER, "[0-9]+"),
+        new SymbolForm(SymbolType.NUMBER, "-?[0-9]+"),
         new SymbolForm(SymbolType.COMMENT, "#.*\n"),
         new SymbolForm(SymbolType.DOT, "\\."),
         new SymbolForm(SymbolType.WHITESPACE, "\\s+"),

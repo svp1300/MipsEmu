@@ -92,6 +92,13 @@ namespace MipsEmu {
             return sum;
         }
 
+        public void ShiftLeft(int amount) {
+            for(int i = 0; i < values.Length; i++) {
+                if (i + amount < values.Length) {
+                    values[i] = values[i + amount];
+                }
+            }
+        }
         /// <summary>Get the signed integer value using two's compliment.</summary>
         public int GetAsSignedInt() => (int) GetAsSignedLong();
         /// <summary>Get the signed long value using two's compliment.</summary>

@@ -7,19 +7,15 @@ namespace MipsEmu.Emulation.Instructions {
     public class InstructionParser {
         // Credit to https://opencores.org/projects/plasma/opcodes for the list of opcodes.
         private static readonly Dictionary<int,IInstruction> OPCODE_INSTRUCTIONS = new Dictionary<int, IInstruction>{
+            {0, new AddInstruction()},
             {2, new JumpInstruction()},
             {3, new JumpAndLinkInstruction()},
+            {4, new BranchOnEqualInstruction()},
             {8, new AddImmediateInstruction()},
             {12, new AndImmediateInstruction()},
             {13, new OrImmediateInstruction()},
             {14, new XorImmediateInstruction()},
             {34, new SubtractInstruction()},
-            // {0b001111, new LoadUpperImmediateInstruction()},
-            // {0b100000, new LoadByteInstruction()},
-            // {0b100001, new LoadHalfWordInstruction()},
-            // {0b100011, new LoadWordInstruction()},
-            // {0b101000, new StoreHalfWordInstruction()},
-            // {0b101001, new StoreHalfWordInstruction()},
             {43, new StoreWordInstruction()},
         };
 
@@ -27,12 +23,6 @@ namespace MipsEmu.Emulation.Instructions {
             {8, new JumpRegisterInstruction()},
             {12, new SyscallInstruction()},
             {32, new AddInstruction()},
-            // {0b100100, new AndInstruction()},
-            // {0b100111, new NorInstruction()},
-            // {0b100110, new XorInstruction()},
-            // {0b100101, new OrInstruction()},
-            // {0b100010, new SubtractInstruction()},
-            // {0b001001, new JumpAndLinkRegisterInstruction()},
         };
 
 
