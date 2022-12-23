@@ -19,7 +19,7 @@ namespace MipsEmu.Emulation.Instructions {
 
             Bits sourceValue = hardware.registers.GetRegisterBits(rs);
 
-            Run(hardware, sourceValue, rt, imm);
+            Run(hardware, sourceValue, rt, imm.SignExtend16());
         }
 
         public Bits CalculateStoreAddress(Hardware hardware, Bits rsValue, Bits imm) {
