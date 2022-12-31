@@ -2,10 +2,10 @@ namespace MipsEmu.Assembler;
 
 using MipsEmu.Assembler.Tokens;
 
-public class PsuedoInstructionExpander {
+public class PseudoInstructionExpander {
     private List<PseudoInstruction> pseudoInstructions;
 
-    public PsuedoInstructionExpander() {
+    public PseudoInstructionExpander() {
         pseudoInstructions = new List<PseudoInstruction>();
     }
 
@@ -21,12 +21,13 @@ public class PsuedoInstructionExpander {
     private void FixSection(SyntaxParseResult section) {
         int index = 0;
         // int lowestLabel = 0; // TODO start label iterator from this
-        while(index < section.instructionLabels.Count) {
+        while(index < section.instructionTokens.Count) {
             Token instruction = section.instructionTokens[index];
             var update = new Token[0];
             foreach(var pseudo in pseudoInstructions) {
-                if (pseudo.MatchInstructionName(instruction)) {
+                if (pseudo.MatchToken(instruction)) {
                     update = pseudo.Expand(instruction);
+                    break;
                 }
             }
             if (update.Length != 0) {
@@ -43,7 +44,7 @@ public class PsuedoInstructionExpander {
     public void AddPseudoInstruction(PseudoInstruction pseudoInstruction) {
         pseudoInstructions.Add(pseudoInstruction);
     }
-    
+
     public UnlinkedProgram ReplacePseudoInstructions(UnlinkedProgram program) {
         for(int sectionId = 0; sectionId < program.GetSectionCount(); sectionId++) {
             FixSection(program.GetSection(sectionId));
@@ -51,10 +52,17 @@ public class PsuedoInstructionExpander {
         return program;
     }
 
+    public static PseudoInstructionExpander CreateDefaultPseudoExpander() {
+        var expander = new PseudoInstructionExpander();
+        expander.AddPseudoInstruction(new LoadImmediatePseudoInstruction());
+        return expander;
+    }
+
 }
 public abstract class PseudoInstruction {
     public string Name {get;}
     private ITokenForm form;
+
     public PseudoInstruction(string name, ITokenForm form) {
         Name = name;
         this.form = form;
@@ -63,8 +71,28 @@ public abstract class PseudoInstruction {
     /// <summary>Convert the psuedoinstruction into a group of real instructions.</summary>
     public abstract Token[] Expand(Token pseudoToken);
 
-    public bool MatchInstructionName(Token instruction) {
-        return instruction.GetSymbolString(0, true).Equals(Name);
+    public bool MatchToken(Token instruction) {
+        return instruction.GetSymbolString(0, true).Equals(Name) && form.Match(instruction.GetAllSymbols(), 0) > 0;
     }
 
+}
+
+public class LoadImmediatePseudoInstruction : PseudoInstruction {
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.NUMBER}, true);
+    
+    public LoadImmediatePseudoInstruction() : base("li", FORM) { }
+
+    public override Token[] Expand(Token pseudoToken) {
+        var register = pseudoToken.GetSymbol(1, true);
+        var immediate = pseudoToken.GetSymbol(3, true);
+        var comma = new Symbol(",", SymbolType.COMMA);
+        var symbols = new Symbol[] {new Symbol("addi", SymbolType.NAME),
+                                    register,
+                                    comma,
+                                    new Symbol("$zero", SymbolType.REGISTER),
+                                    comma,
+                                    immediate};
+        return new Token[] {new TypeIInstructionToken(symbols)};
+
+    }
 }

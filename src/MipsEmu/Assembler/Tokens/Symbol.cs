@@ -23,8 +23,43 @@ public struct Symbol {
             return false;
     }
 
-
     public override int GetHashCode() => value.GetHashCode();
+
+    public static Symbol[] GetSymbols(Symbol[] match, int start, int end, bool ignoreWhitespace) {
+        var result = new Symbol[end - start];
+        int index = 0;
+        int skip = 0;
+        while (index < end && index + skip < match.Length) {
+            if (ignoreWhitespace && match[index + skip].type.Equals(SymbolType.WHITESPACE)) {
+                skip++;
+            } else {
+                if (index >= start) {
+                    result[index - start] = match[index + skip];
+                }
+                index++;
+            }
+        }
+        return result;
+    }
+
+    public static Symbol GetSymbol(Symbol[] match, int location, bool ignoreWhitespace) {
+        return GetSymbols(match, location, location + 1, ignoreWhitespace)[0];
+    }
+
+
+    public static string GetSymbolString(Symbol[] match, int index, Boolean ignoreWhitespace) => GetSymbol(match, index, ignoreWhitespace).value;
+    
+    public static string GetSymbolString(Symbol[] match, int index) => GetSymbolString(match, index, true);
+
+    public static int GetSymbolCount(Symbol[] match, bool ignoreWhitespace) {
+        int count = 0;
+        foreach(var sym in match) {
+            if (ignoreWhitespace && sym.type.Equals(SymbolType.WHITESPACE))
+                continue;
+            count++;
+        }
+        return count;
+    }
 }
 
 /// <summary>Represents the lexical specification for a symbol and its categorization.</sumary>

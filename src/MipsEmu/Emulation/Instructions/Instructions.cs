@@ -14,8 +14,8 @@ namespace MipsEmu.Emulation.Instructions {
         public static readonly Interval RS_BITS = new Interval(16, 5);
         public void Run(Hardware hardware, Bits bits) {
             var imm = bits.LoadBits(0, 16);
-            var rs = bits.GetUnsignedIntFromRange(16, 5);
-            var rt = bits.GetUnsignedIntFromRange(21, 5);
+            var rt = bits.GetUnsignedIntFromRange(16, 5);
+            var rs = bits.GetUnsignedIntFromRange(21, 5);
 
             Bits sourceValue = hardware.registers.GetRegisterBits(rs);
 

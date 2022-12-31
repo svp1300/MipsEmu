@@ -46,7 +46,7 @@ namespace MipsEmu {
                     break;
                 }
             }
-            Console.WriteLine(hardware.registers);
+            // Console.WriteLine(hardware.registers);
         }
         
         public virtual bool Cycle() {

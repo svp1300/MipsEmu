@@ -202,20 +202,11 @@ public class SingleRegisterInstructionToken : InstructionToken {
     }
 }
 
-public class LoadImmediateInstructionToken : InstructionToken {
-    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.NUMBER}, true);
-    public LoadImmediateInstructionToken(Symbol[] match) : base(match) { }
+public class PseudoInstructionToken : InstructionToken {
+    public PseudoInstructionToken(Symbol[] match) : base(match) { }
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
-        Bits instruction = new Bits(32);
-        instruction.Store(26, InstructionToken.OPCODE_INSTRUCTION_BITS["addi"]);
-        var register = InstructionToken.REGISTER_BITS[GetSymbolString(1)];
-        instruction.Store(21, register);
-        instruction.Store(16, register);   
-        Bits imm = new Bits(16);
-        imm.SetFromSignedLong(long.Parse(GetSymbolString(3)));
-        instruction.Store(0, imm);
-        return instruction;
+        throw new NotImplementedException();
     }
 
 }

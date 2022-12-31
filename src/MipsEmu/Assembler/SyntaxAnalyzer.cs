@@ -288,9 +288,10 @@ public class SyntaxAnalyzer {
         syntaxAnalyzer.AddTokenForm(MemoryInstructionToken.FORM, (s) => new MemoryInstructionToken(s));
         syntaxAnalyzer.AddTokenForm(SingleRegisterInstructionToken.FORM, (s) => new SingleRegisterInstructionToken(s));
         syntaxAnalyzer.AddTokenForm(LabelToken.FORM, (s) => new LabelToken(s));
-        syntaxAnalyzer.AddTokenForm(LoadImmediateInstructionToken.FORM, (s) => new LoadImmediateInstructionToken(s));
         syntaxAnalyzer.AddTokenForm(SyscallInstructionToken.FORM, (s) => new SyscallInstructionToken(s));
         syntaxAnalyzer.AddTokenForm(JumpInstructionToken.FORM, (s) => new JumpInstructionToken(s));
+
+        syntaxAnalyzer.AddTokenForm(LoadImmediatePseudoInstruction.FORM, (s) => new PseudoInstructionToken(s));
         return syntaxAnalyzer;
     }
 }

@@ -59,6 +59,7 @@ public class UnlinkedProgram  {
     public long GetTextStartAddress(int sectionId) => textStartTable[sectionId];
 
     public int GetSectionCount() => programSections.Count;
+    public SyntaxParseResult GetSection(int sectionId) => programSections[sectionId];
 
     public long GetAddress(string name, int sectionId, bool text) {
         Label? localLabel = programSections[sectionId].GetLabel(name, text);
@@ -105,12 +106,14 @@ public class LinkedProgram {
 public class ProgramLinker {
     private SyntaxAnalyzer syntaxAnalyzer;
     private List<SyntaxParseResult> programSections;
+    private PseudoInstructionExpander pseudoExpander;
     private Dictionary<string, int> symbolTable;
     
     private object dataLock;
 
-    public ProgramLinker(SyntaxAnalyzer syntaxAnalyzer) {
+    public ProgramLinker(SyntaxAnalyzer syntaxAnalyzer, PseudoInstructionExpander pseudoExpander) {
         this.syntaxAnalyzer = syntaxAnalyzer;
+        this.pseudoExpander = pseudoExpander;
         symbolTable = new Dictionary<string, int>();
         programSections = new List<SyntaxParseResult>();
         dataLock = new object();
@@ -142,15 +145,18 @@ public class ProgramLinker {
         }
     }
 
+    /// <summary>Parse each section of the program and replace the pseudoinstructions.</summary>
     public UnlinkedProgram Parse(string[] program) {
         ParseSection("jal main li $v0, 10 syscall"); // enter and exit first
         foreach (string section in program) { // TODO async
             ParseSection(section);
         }
-        return new UnlinkedProgram(programSections, symbolTable);
+        var unlinked = new UnlinkedProgram(programSections, symbolTable);
+        return pseudoExpander.ReplacePseudoInstructions(unlinked);
     }
     
 
+    /// <summary>Link each section to create a runnable assembly program.</summary>
     public LinkedProgram Link(UnlinkedProgram unlinked) {
         var data = new Bits(unlinked.GetDataLength());
         var text = new Bits(unlinked.GetTextLength());

@@ -47,41 +47,19 @@ public abstract class Token {
         this.match = match;
     }
 
-    public Symbol[] GetSymbols(int start, int end, bool ignoreWhitespace) {
-        var result = new Symbol[end - start];
-        int index = 0;
-        int skip = 0;
-        while (index < end && index + skip < match.Length) {
-            if (ignoreWhitespace && match[index + skip].type.Equals(SymbolType.WHITESPACE)) {
-                skip++;
-            } else {
-                if (index >= start) {
-                    result[index - start] = match[index + skip];
-                }
-                index++;
-            }
-        }
-        return result;
-    }
+    public Symbol[] GetSymbols(int start, int end, bool ignoreWhitespace) => Symbol.GetSymbols(match, start, end, ignoreWhitespace);
 
-    public Symbol GetSymbol(int location, bool ignoreWhitespace) {
-        return GetSymbols(location, location + 1, ignoreWhitespace)[0];
-    }
+    public Symbol[] GetAllSymbols() => match;
+    
+    public Symbol GetSymbol(int location, bool ignoreWhitespace) => Symbol.GetSymbol(match, location, ignoreWhitespace);
 
     public abstract Bits MakeValueBits(UnlinkedProgram sections, int sectionId);
 
-    public string GetSymbolString(int index, Boolean ignoreWhitespace) => GetSymbol(index, ignoreWhitespace).value;
+    public string GetSymbolString(int index, Boolean ignoreWhitespace) => Symbol.GetSymbolString(match, index, ignoreWhitespace);
     public string GetSymbolString(int index) => GetSymbolString(index, true);
-    public int GetSymbolCount(bool ignoreWhitespace) {
-        int count = 0;
-        foreach(var sym in match) {
-            if (ignoreWhitespace && sym.type.Equals(SymbolType.WHITESPACE))
-                continue;
-            count++;
-        }
-        return count;
-    }
 
+    public int GetSymbolCount(bool ignoreWhitespace) => Symbol.GetSymbolCount(match, ignoreWhitespace);
+    
     // Data/
 
     public abstract long GetBitLength(int alignment);
@@ -102,6 +80,7 @@ public class LabelToken : Token {
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
         throw new NotImplementedException();
     }
+    
     public override long GetBitLength(int alignment) => 0;
     public override TokenType GetTokenType() => TokenType.LABEL;
 }
