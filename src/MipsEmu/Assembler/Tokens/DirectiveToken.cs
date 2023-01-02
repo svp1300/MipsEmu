@@ -23,13 +23,13 @@ public class ArgumentlessDirectiveToken : Token {
 }
 
 
-public class NumberArgumentDirective : Token {
+public class NumberArgumentDirectiveToken : Token {
     public static readonly ITokenForm FORM = new CompositeTokenForm(new ITokenForm[] {
         new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.NAME, SymbolType.NUMBER}, true),
         new RepeatableTokenForm(new SymbolType[] {SymbolType.COMMA, SymbolType.NUMBER}, true)
     });
 
-    public NumberArgumentDirective(Symbol[] symbols) : base(symbols) { }
+    public NumberArgumentDirectiveToken(Symbol[] symbols) : base(symbols) { }
 
     public override TokenType GetTokenType() => TokenType.DIRECTIVE;
 
@@ -42,6 +42,8 @@ public class NumberArgumentDirective : Token {
             return 16 * ((symbolCount - 1)/2);
         else if (directive.Equals("word"))
             return 32 * ((symbolCount - 1)/2);
+        else if (directive.Equals("space"))
+            return Int32.Parse(GetSymbolString(2));
         else
             return 0;
     }
@@ -89,6 +91,24 @@ public class TextArgumentDirectiveToken : Token {
 
     public override long GetBitLength(int alignment) {
         return 0;
+    }
+    
+    public override TokenType GetTokenType() => TokenType.DIRECTIVE;
+
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+        return new Bits(0);
+    }
+}
+
+public class StringArgumentDirectiveToken : Token {
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.NAME, SymbolType.STRING}, true);
+
+    public StringArgumentDirectiveToken(Symbol[] match) : base(match) { }
+
+    public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) { }
+
+    public override long GetBitLength(int alignment) {
+        return 4 * GetSymbolString(2, true).Length; // TODO alignment support
     }
     
     public override TokenType GetTokenType() => TokenType.DIRECTIVE;

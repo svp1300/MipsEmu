@@ -161,21 +161,23 @@ public class SyntaxAnalyzer {
         return SeparateTokens(tokens);
     } 
 
+    public static int h = 0;
     /// <summary>Takes the given symbols and creates a parse tree for use in analyzing the program.</summary>
     /// <param name="symbols">The symbols found during a program's lexical analysis.</param>
     /// <returns>The parse tree created by analyzing symbols.</returns>
     public ParseTreeNode BuildTree(Symbol[] symbols) {
         ParseTreeNode root = new ParseTreeNode(null);
         BuildTree(root, symbols, 0);
+        Console.WriteLine(h);
         return root;
     }
 
     private void BuildTree(ParseTreeNode parent, Symbol[] symbols, int startIndex) {
         if (startIndex < symbols.Length) {
-            var result = new List<Token>();
             var matches = factory.FindMatches(symbols, startIndex);
             foreach (var match in matches) {
                 Token token = factory.Generate(symbols, match, startIndex);
+                Console.WriteLine(token);
                 var child = parent.AddChild(token);
                 BuildTree(child, symbols, startIndex + match.Item2);
             }
@@ -191,15 +193,14 @@ public class SyntaxAnalyzer {
         nodes.Push(max);
         while (nodes.Count > 0) {
             var current = nodes.Pop();
+            foreach(var child in current.Item2.Children) {
+                int childLength = 0;
+                if (child.Data != null)
+                    childLength = current.Item1 + child.Data.GetSymbolCount(true);
+                nodes.Push(new Tuple<int, ParseTreeNode>(childLength, child));
+            }
             if (max == null) {
                 current = max;
-            } else if (current.Item2.Children.Count > 0) {
-                foreach(var child in current.Item2.Children) {
-                    int childLength = 0;
-                    if (child.Data != null)
-                        childLength = current.Item1 + child.Data.GetSymbolCount(true);
-                    nodes.Push(new Tuple<int, ParseTreeNode>(childLength, child));
-                }
             } else if (current.Item1 > max.Item1) { // no deeper
                 max = current;
             }
@@ -284,7 +285,9 @@ public class SyntaxAnalyzer {
 
         syntaxAnalyzer.AddTokenForm(ArgumentlessDirectiveToken.FORM, (s) => new ArgumentlessDirectiveToken(s));
         syntaxAnalyzer.AddTokenForm(TextArgumentDirectiveToken.FORM, (s) => new TextArgumentDirectiveToken(s));
-        syntaxAnalyzer.AddTokenForm(NumberArgumentDirective.FORM, (s) => new NumberArgumentDirective(s));
+        syntaxAnalyzer.AddTokenForm(NumberArgumentDirectiveToken.FORM, (s) => new NumberArgumentDirectiveToken(s));
+        syntaxAnalyzer.AddTokenForm(StringArgumentDirectiveToken.FORM, (s) => new StringArgumentDirectiveToken(s));
+
         syntaxAnalyzer.AddTokenForm(MemoryInstructionToken.FORM, (s) => new MemoryInstructionToken(s));
         syntaxAnalyzer.AddTokenForm(SingleRegisterInstructionToken.FORM, (s) => new SingleRegisterInstructionToken(s));
         syntaxAnalyzer.AddTokenForm(LabelToken.FORM, (s) => new LabelToken(s));
@@ -292,6 +295,8 @@ public class SyntaxAnalyzer {
         syntaxAnalyzer.AddTokenForm(JumpInstructionToken.FORM, (s) => new JumpInstructionToken(s));
 
         syntaxAnalyzer.AddTokenForm(LoadImmediatePseudoInstruction.FORM, (s) => new PseudoInstructionToken(s));
+        syntaxAnalyzer.AddTokenForm(MovePseudoInstruction.FORM, (s) => new PseudoInstructionToken(s));
+        syntaxAnalyzer.AddTokenForm(LoadAddressPseudoInstruction.FORM, (s) => new PseudoInstructionToken(s));
         return syntaxAnalyzer;
     }
 }

@@ -152,7 +152,9 @@ public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {Sy
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
         Bits targetBits = new Bits(26);
-        long address = sections.GetAddress(GetSymbolString(1), sectionId, true);
+        long address = sections.GetLabelAddress(GetSymbolString(1), sectionId, true);
+        if (address == -1)
+            throw new ParseException($"Unable to find label {GetSymbolString(1)}");
         targetBits.SetFromUnsignedLong(address >> 2);
         Bits instruction = new Bits(32);
         instruction.Store(0, targetBits.GetValues());

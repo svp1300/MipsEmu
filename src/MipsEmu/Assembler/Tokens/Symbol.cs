@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 /// <summary>Structure representing lowest level tokens. Represents registers, comments, and various symbols. NOT to be confused with symbols from assembly.</summary>
-public struct Symbol {
+public class Symbol {
     public string value;
     public SymbolType type;
 
@@ -62,6 +62,13 @@ public struct Symbol {
     }
 }
 
+public class LazySymbol : Symbol {
+    public LazySymbol(SymbolType type) : base("", type) {
+
+    }
+
+}
+
 /// <summary>Represents the lexical specification for a symbol and its categorization.</sumary>
 public struct SymbolForm {
     public SymbolType type;
@@ -79,5 +86,5 @@ public struct SymbolForm {
 }
 
 public enum SymbolType {
-    QUOTE, NUMBER, NAME, COMMENT, DOT, WHITESPACE, COLON, REGISTER, COMMA, OPEN_PAREN, CLOSE_PAREN, STRING
+    QUOTE, NUMBER, NAME, COMMENT, DOT, WHITESPACE, COLON, REGISTER, COMMA, OPEN_PAREN, CLOSE_PAREN, STRING, EQUALS, MULTIPLY
 }

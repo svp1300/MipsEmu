@@ -61,7 +61,15 @@ public class UnlinkedProgram  {
     public int GetSectionCount() => programSections.Count;
     public SyntaxParseResult GetSection(int sectionId) => programSections[sectionId];
 
-    public long GetAddress(string name, int sectionId, bool text) {
+    public long GetLabelAddress(string name, int sectionId) {
+        try {
+            return GetLabelAddress(name, sectionId, false);
+        } catch(ParseException) {
+            return GetLabelAddress(name, sectionId, true);
+        }
+    }
+
+    public long GetLabelAddress(string name, int sectionId, bool text) {
         Label? localLabel = programSections[sectionId].GetLabel(name, text);
         if (localLabel == null && symbolTable.ContainsKey(name))
             localLabel = programSections[symbolTable[name]].GetLabel(name, text);
@@ -187,7 +195,7 @@ public class ProgramLinker {
         foreach (var dataToken in programSections[sectionId].directiveTokens) {
             dataBitsList.AddLast((dataToken).MakeValueBits(unlinked, sectionId));
         }
-        long address = unlinked.GetTextStartAddress(sectionId);
+        long address = unlinked.GetDataStartAddress(sectionId);
         while (dataBitsList.Count > 0) {
             var front = dataBitsList.First;
             if (front == null) {

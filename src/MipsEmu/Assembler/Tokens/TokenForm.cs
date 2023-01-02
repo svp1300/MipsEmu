@@ -19,7 +19,7 @@ public class CompositeTokenForm : ITokenForm {
         foreach(var form in tokenForms) {
             var subMatch = form.Match(symbols, begin + matchLength);
             if (form.ShouldStop(subMatch))
-                return 0;
+                break;
             else
                 matchLength += subMatch;
         }

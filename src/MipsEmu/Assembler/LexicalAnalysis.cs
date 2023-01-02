@@ -19,7 +19,9 @@ public class LexicalAnalyzer {
         new SymbolForm(SymbolType.COLON, ":"),
         new SymbolForm(SymbolType.COMMA, ","),
         new SymbolForm(SymbolType.OPEN_PAREN, "\\("),
-        new SymbolForm(SymbolType.CLOSE_PAREN, "\\)")
+        new SymbolForm(SymbolType.CLOSE_PAREN, "\\)"),
+        new SymbolForm(SymbolType.EQUALS, "="),
+        new SymbolForm(SymbolType.MULTIPLY, "\\*")
     };
 
     /// <summary>Traverses the string looking for the longest matches.</summary>
@@ -46,6 +48,10 @@ public class LexicalAnalyzer {
                 position += longestMatch.Length;
             }
         }
+        foreach (var s in symbols) {
+            Console.WriteLine(s);
+        }
+        
         return symbols.ToArray();
         
     }
