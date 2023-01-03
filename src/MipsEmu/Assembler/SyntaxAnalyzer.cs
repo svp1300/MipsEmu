@@ -161,25 +161,30 @@ public class SyntaxAnalyzer {
         return SeparateTokens(tokens);
     } 
 
-    public static int h = 0;
     /// <summary>Takes the given symbols and creates a parse tree for use in analyzing the program.</summary>
     /// <param name="symbols">The symbols found during a program's lexical analysis.</param>
     /// <returns>The parse tree created by analyzing symbols.</returns>
     public ParseTreeNode BuildTree(Symbol[] symbols) {
         ParseTreeNode root = new ParseTreeNode(null);
         BuildTree(root, symbols, 0);
-        Console.WriteLine(h);
+        foreach(var s in symbols)
+            Console.WriteLine(s);
         return root;
     }
+
+    
 
     private void BuildTree(ParseTreeNode parent, Symbol[] symbols, int startIndex) {
         if (startIndex < symbols.Length) {
             var matches = factory.FindMatches(symbols, startIndex);
             foreach (var match in matches) {
                 Token token = factory.Generate(symbols, match, startIndex);
-                Console.WriteLine(token);
-                var child = parent.AddChild(token);
-                BuildTree(child, symbols, startIndex + match.Item2);
+                if (token.CheckValidMatch()) {
+                    var child = parent.AddChild(token);
+                    BuildTree(child, symbols, startIndex + match.Item2);
+                } else {
+                    Console.WriteLine("invalid token");
+                }
             }
         }
     }
@@ -293,6 +298,7 @@ public class SyntaxAnalyzer {
         syntaxAnalyzer.AddTokenForm(LabelToken.FORM, (s) => new LabelToken(s));
         syntaxAnalyzer.AddTokenForm(SyscallInstructionToken.FORM, (s) => new SyscallInstructionToken(s));
         syntaxAnalyzer.AddTokenForm(JumpInstructionToken.FORM, (s) => new JumpInstructionToken(s));
+        syntaxAnalyzer.AddTokenForm(BranchInstructionToken.FORM, (s) => new BranchInstructionToken(s));
 
         syntaxAnalyzer.AddTokenForm(LoadImmediatePseudoInstruction.FORM, (s) => new PseudoInstructionToken(s));
         syntaxAnalyzer.AddTokenForm(MovePseudoInstruction.FORM, (s) => new PseudoInstructionToken(s));

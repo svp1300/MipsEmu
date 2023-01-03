@@ -1,10 +1,26 @@
 namespace MipsEmu.Assembler.Tokens;
 
 
-public class ArgumentlessDirectiveToken : Token {
+public abstract class DirectiveToken : Token {
+    private string[] validNames;
+
+    public DirectiveToken(Symbol[] match, string[] validNames) : base(match) {
+        this.validNames = validNames;
+    }
+
+    public override bool CheckValidMatch() {
+        var name = GetSymbolString(1);
+        foreach(var directiveName in validNames) {
+            if (directiveName.Equals(name))
+                return true;
+        }
+        return false;
+    }
+}
+public class ArgumentlessDirectiveToken : DirectiveToken {
     public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.NAME}, true); // .data
-    
-    public ArgumentlessDirectiveToken(Symbol[] match) : base(match) { }
+    public static readonly string[] VALID_NAMES = new string[] {"data", "text"};
+    public ArgumentlessDirectiveToken(Symbol[] match) : base(match, VALID_NAMES) { }
 
     public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) {
         string directive = GetSymbol(1, true).value.ToLower();
@@ -23,13 +39,14 @@ public class ArgumentlessDirectiveToken : Token {
 }
 
 
-public class NumberArgumentDirectiveToken : Token {
+public class NumberArgumentDirectiveToken : DirectiveToken {
+    public static readonly string[] VALID_NAMES = new string[] {"align", "byte", "word", "half", "space"};
     public static readonly ITokenForm FORM = new CompositeTokenForm(new ITokenForm[] {
         new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.NAME, SymbolType.NUMBER}, true),
         new RepeatableTokenForm(new SymbolType[] {SymbolType.COMMA, SymbolType.NUMBER}, true)
     });
 
-    public NumberArgumentDirectiveToken(Symbol[] symbols) : base(symbols) { }
+    public NumberArgumentDirectiveToken(Symbol[] symbols) : base(symbols, VALID_NAMES) { }
 
     public override TokenType GetTokenType() => TokenType.DIRECTIVE;
 
@@ -78,9 +95,10 @@ public class NumberArgumentDirectiveToken : Token {
         
     }
 }
-public class TextArgumentDirectiveToken : Token {
+public class TextArgumentDirectiveToken : DirectiveToken {
     public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.NAME, SymbolType.NAME}, true);
-    public TextArgumentDirectiveToken(Symbol[] match) : base(match) { }
+    public static readonly string[] VALID_NAMES = new string[] {"globl"};
+    public TextArgumentDirectiveToken(Symbol[] match) : base(match, VALID_NAMES) { }
 
     public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) {
         string directive = GetSymbol(1, true).value.ToLower();
@@ -100,10 +118,11 @@ public class TextArgumentDirectiveToken : Token {
     }
 }
 
-public class StringArgumentDirectiveToken : Token {
+public class StringArgumentDirectiveToken : DirectiveToken {
     public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.NAME, SymbolType.STRING}, true);
+    public static readonly string[] VALID_NAMES = new string[] {"asciiz", "ascii"};
 
-    public StringArgumentDirectiveToken(Symbol[] match) : base(match) { }
+    public StringArgumentDirectiveToken(Symbol[] match) : base(match, VALID_NAMES) { }
 
     public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) { }
 

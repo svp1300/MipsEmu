@@ -50,6 +50,10 @@ public class UnlinkedProgram  {
         }
     }
 
+    public void IncreaseTextSum(int instructionAmount) {
+        textSum += 32 * instructionAmount;
+    }
+
     public long GetDataLength() => dataSum;
     public long GetTextLength() => textSum;
 

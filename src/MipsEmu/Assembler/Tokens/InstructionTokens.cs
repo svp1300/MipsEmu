@@ -93,13 +93,11 @@ public abstract class InstructionToken : Token {
         {"$ra", IntBits(31, 5)}, {"$31", IntBits(31, 5)},
     };
 
-    private static bool[] IntBits(int value, int size) {
-        var bits = new Bits(size);
-        bits.SetFromUnsignedInt(value);
-        return bits.GetValues();
-    }
+    private string[] validNames;
 
-    public InstructionToken(Symbol[] match) : base(match) { }
+    public InstructionToken(Symbol[] match, string[] validNames) : base(match) {
+        this.validNames = validNames;
+    }
     public override TokenType GetTokenType() => TokenType.INSTRUCTION;
 
     public override long GetBitLength(int alignment) => 32;
@@ -107,14 +105,28 @@ public abstract class InstructionToken : Token {
     public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) {
         throw new ParseException("Only dot directives can change the state of the assembler.");
     }
+
+    public override bool CheckValidMatch() {
+        var name = GetSymbolString(0);
+        foreach(var directiveName in validNames) {
+            if (directiveName.Equals(name))
+                return true;
+        }
+        return false;
+    }
+
+    private static bool[] IntBits(int value, int size) {
+        var bits = new Bits(size);
+        bits.SetFromUnsignedInt(value);
+        return bits.GetValues();
+    }
 }
 
 
 public class TypeRInstructionToken : InstructionToken {
-    
     public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.REGISTER}, true); // add $rs, $rt, $rd
-
-    public TypeRInstructionToken(Symbol[] match) : base(match) { }
+    public static readonly string[] VALID_NAMES = new string[] {"add", "sub"};
+    public TypeRInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
         var instruction = new Bits(32);
@@ -128,8 +140,8 @@ public class TypeRInstructionToken : InstructionToken {
 }
 public class TypeIInstructionToken : InstructionToken {
     public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.NUMBER}, true); // addi $rs, $rt, imm
-    
-    public TypeIInstructionToken(Symbol[] match) : base(match) { }
+    public static readonly string[] VALID_NAMES = new string[] {"addi"};
+    public TypeIInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
     
     public override TokenType GetTokenType() => TokenType.INSTRUCTION;
 
@@ -147,8 +159,9 @@ public class TypeIInstructionToken : InstructionToken {
 }
 
 public class JumpInstructionToken : InstructionToken {
-public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.NAME}, true);
-    public JumpInstructionToken(Symbol[] match) : base(match) { }
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.NAME}, true);
+    public static readonly string[] VALID_NAMES = new string[] {"j", "jal"};
+    public JumpInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
         Bits targetBits = new Bits(26);
@@ -165,8 +178,8 @@ public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {Sy
 }
 public class MemoryInstructionToken : InstructionToken {
     public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.NUMBER, SymbolType.OPEN_PAREN, SymbolType.REGISTER, SymbolType.CLOSE_PAREN}, true);
-    
-    public MemoryInstructionToken(Symbol[] match) : base(match) { }
+    public static readonly string[] VALID_NAMES = new string[] {"lw", "lh", "lb", "sw", "sh", "sb"};
+    public MemoryInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
     
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
         var instruction = new Bits(32);
@@ -184,9 +197,26 @@ public class MemoryInstructionToken : InstructionToken {
     }
 }
 
+public class RegisterImmediateInstructionToken :InstructionToken {
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.NUMBER}, true);
+    public static readonly string[] VALID_NAMES = new string[] {"lui"};
+
+    public RegisterImmediateInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
+
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+        var instruction = new Bits(32);
+        instruction.Store(26, OPCODE_INSTRUCTION_BITS[GetSymbolString(0)]);
+        instruction.Store(16, InstructionToken.REGISTER_BITS[GetSymbolString(1)]);
+        var immediate = new Bits(16);
+        immediate.SetFromSignedLong(long.Parse(GetSymbolString(3)));
+        instruction.Store(0, immediate);
+        return instruction;
+    }
+}
 public class SingleRegisterInstructionToken : InstructionToken {    
     public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.REGISTER}, true);
-    public SingleRegisterInstructionToken(Symbol[] match) : base(match) { }
+    public static readonly string[] VALID_NAMES = new string[] {"jr", "jalr"};
+    public SingleRegisterInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
         var instruction = new Bits(32);
@@ -205,7 +235,8 @@ public class SingleRegisterInstructionToken : InstructionToken {
 }
 
 public class PseudoInstructionToken : InstructionToken {
-    public PseudoInstructionToken(Symbol[] match) : base(match) { }
+    public static readonly string[] VALID_NAMES = new string[] {"la", "mult", "move", "li"};
+    public PseudoInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
         throw new NotImplementedException();
@@ -215,7 +246,7 @@ public class PseudoInstructionToken : InstructionToken {
 
 public class SyscallInstructionToken : InstructionToken {
     public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME}, true);
-    public SyscallInstructionToken(Symbol[] match) : base(match) { }
+    public SyscallInstructionToken(Symbol[] match) : base(match, new string[]{"syscall"}) { }
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
         Bits instruction = new Bits(32);
@@ -223,4 +254,21 @@ public class SyscallInstructionToken : InstructionToken {
         return instruction;
     }
 
+}
+
+public class BranchInstructionToken : InstructionToken {
+    public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.NAME}, true);
+
+    public static readonly string[] VALID_NAMES = new string[] {"beq", "bne", "bge"};
+    public BranchInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
+
+    public override Bits MakeValueBits(UnlinkedProgram unlinked, int sectionId) {
+        Bits instruction = new Bits(32);
+        instruction.Store(26, InstructionToken.OPCODE_INSTRUCTION_BITS[GetSymbolString(0, true)]);
+        // TODO finish
+        instruction.Store(21, REGISTER_BITS[GetSymbolString(1)]);
+        instruction.Store(16, REGISTER_BITS[GetSymbolString(3)]);
+        long address = unlinked.GetLabelAddress(GetSymbolString(5), sectionId, false);
+        return instruction;
+    }
 }

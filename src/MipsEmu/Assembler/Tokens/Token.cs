@@ -47,6 +47,8 @@ public abstract class Token {
         this.match = match;
     }
 
+    public abstract bool CheckValidMatch();
+
     public Symbol[] GetSymbols(int start, int end, bool ignoreWhitespace) => Symbol.GetSymbols(match, start, end, ignoreWhitespace);
 
     public Symbol[] GetAllSymbols() => match;
@@ -82,5 +84,7 @@ public class LabelToken : Token {
     }
     
     public override long GetBitLength(int alignment) => 0;
+
+    public override bool CheckValidMatch() => true;
     public override TokenType GetTokenType() => TokenType.LABEL;
 }

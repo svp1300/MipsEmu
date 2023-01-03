@@ -18,8 +18,9 @@ public class PseudoInstructionExpander {
         }
     }
 
-    private void FixSection(UnlinkedProgram unlinked, int sectionId) {
+    private int FixSection(UnlinkedProgram unlinked, int sectionId) {
         SyntaxParseResult section = unlinked.GetSection(sectionId);
+        int expansion = 0;
         int index = 0;
         // int lowestLabel = 0; // TODO start label iterator from this
         while(index < section.instructionTokens.Count) {
@@ -36,10 +37,12 @@ public class PseudoInstructionExpander {
                 section.instructionTokens.InsertRange(index, update);
                 FixSectionLabels(index, update.Length, section);
                 index += update.Length;
+                expansion += update.Length - 1;
             } else {
                 index++;
             }
         }
+        return expansion;
     }
 
     public void AddPseudoInstruction(PseudoInstruction pseudoInstruction) {
@@ -47,15 +50,19 @@ public class PseudoInstructionExpander {
     }
 
     public UnlinkedProgram ReplacePseudoInstructions(UnlinkedProgram program) {
+        int instructionDelta = 0;
         for(int sectionId = 0; sectionId < program.GetSectionCount(); sectionId++) {
-            FixSection(program, sectionId);
+            instructionDelta += FixSection(program, sectionId);
         }
+        program.IncreaseTextSum(instructionDelta);
         return program;
     }
 
     public static PseudoInstructionExpander CreateDefaultPseudoExpander() {
         var expander = new PseudoInstructionExpander();
         expander.AddPseudoInstruction(new LoadImmediatePseudoInstruction());
+        expander.AddPseudoInstruction(new MovePseudoInstruction());
+        expander.AddPseudoInstruction(new LoadAddressPseudoInstruction());
         return expander;
     }
 
@@ -106,13 +113,13 @@ public class MovePseudoInstruction : PseudoInstruction {
     public override Token[] Expand(Token pseudoToken, UnlinkedProgram unlinked, int sectionId) {
         var toRegister = pseudoToken.GetSymbol(1, true);
         var fromRegister = pseudoToken.GetSymbol(3, true);
-        var symbols = new Symbol[] {new Symbol("addi", SymbolType.NAME),
+        var symbols = new Symbol[] {new Symbol("add", SymbolType.NAME),
                                     toRegister,
                                     new Symbol(",", SymbolType.COMMA),
                                     new Symbol("$zero", SymbolType.REGISTER),
                                     new Symbol(",", SymbolType.COMMA),
                                     fromRegister};
-        return new Token[] {new TypeIInstructionToken(symbols)};
+        return new Token[] {new TypeRInstructionToken(symbols)};
     }
     
 }
@@ -127,10 +134,10 @@ public LoadAddressPseudoInstruction() : base("la", FORM) { }
         var register = pseudoToken.GetSymbol(1, true);
         var labelName = pseudoToken.GetSymbol(3, true);
         var comma = new Symbol(",", SymbolType.COMMA);
-        tokens[0] = new TypeIInstructionToken(new Symbol[] {new Symbol("lui", SymbolType.NAME),
+        tokens[0] = new RegisterImmediateInstructionToken(new Symbol[] {new Symbol("lui", SymbolType.NAME),
                                                             new Symbol("$at", SymbolType.REGISTER),
                                                             comma,
-                                                            new Symbol("0x1001", SymbolType.NUMBER)});
+                                                            new Symbol("4097", SymbolType.NUMBER)});
         
         long address = unlinked.GetLabelAddress(labelName.value, sectionId, false); // not offset by 0x1001<<16, so it's fine without subtraction
         tokens[1] = new TypeIInstructionToken(new Symbol[] {new Symbol("ori", SymbolType.NAME),
