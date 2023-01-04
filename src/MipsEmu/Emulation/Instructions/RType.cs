@@ -52,6 +52,9 @@ namespace MipsEmu.Emulation.Instructions {
     public class JumpRegisterInstruction : InstructionRType {
 
         public override void Run(Hardware hardware, Bits rsValue, Bits rtValue, int rd) {
+            if (rsValue.Equals(hardware.programCounter.GetBits())) { 
+                throw new Exception("Infinite loop reached.");
+            }
             hardware.programCounter.SetBits(rsValue);
         }
     }
@@ -60,6 +63,9 @@ namespace MipsEmu.Emulation.Instructions {
 
         public override void Run(Hardware hardware, Bits rsValue, Bits rtValue, int rd) {
             Bits currentPosition = hardware.programCounter.GetBits();
+            if (rsValue.Equals(currentPosition)) { 
+                throw new Exception("Infinite loop reached.");
+            }
             hardware.registers.SetRegisterBits(RegisterFile.RA_INDEX, currentPosition);
             hardware.programCounter.SetBits(rsValue);
         }

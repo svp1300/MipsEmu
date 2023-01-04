@@ -7,7 +7,6 @@ namespace MipsEmu.Emulation.Instructions {
     public class InstructionParser {
         // Credit to https://opencores.org/projects/plasma/opcodes for the list of opcodes.
         private static readonly Dictionary<int,IInstruction> OPCODE_INSTRUCTIONS = new Dictionary<int, IInstruction>{
-            {0, new AddInstruction()},
             {2, new JumpInstruction()},
             {3, new JumpAndLinkInstruction()},
             {4, new BranchOnEqualInstruction()},
@@ -15,7 +14,9 @@ namespace MipsEmu.Emulation.Instructions {
             {12, new AndImmediateInstruction()},
             {13, new OrImmediateInstruction()},
             {14, new XorImmediateInstruction()},
+            {15, new LoadUpperImmediateInstruction()},
             {34, new SubtractInstruction()},
+            {35, new LoadWordInstruction()},
             {43, new StoreWordInstruction()},
         };
 

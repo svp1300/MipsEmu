@@ -48,9 +48,6 @@ public class LexicalAnalyzer {
                 position += longestMatch.Length;
             }
         }
-        foreach (var s in symbols) {
-            Console.WriteLine(s);
-        }
         
         return symbols.ToArray();
         

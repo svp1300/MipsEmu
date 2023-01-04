@@ -35,7 +35,7 @@ public class PseudoInstructionExpander {
             if (update.Length != 0) {
                 section.instructionTokens.RemoveAt(index);
                 section.instructionTokens.InsertRange(index, update);
-                FixSectionLabels(index, update.Length, section);
+                FixSectionLabels(index, update.Length - 1, section);
                 index += update.Length;
                 expansion += update.Length - 1;
             } else {

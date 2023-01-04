@@ -51,20 +51,20 @@ public class AssembleCommand : Command {
         }
         // text = ".data values:.byte 5,4,3, 2, 1 beep: .word 16.text .globl main main: addi $t0, $t0, 43 add $t0, $t0, $t1 sub $t4, $s0, $t1 jr $ra";
         // text = ".globl main main: add $t0, $t0, $t1 add $t0, $t0, $t1 add $t0, $t0, $t1 lw $s0, 0($t0)";
-        var text = ".data var: .space 8 second: .byte 7 .text .globl main main: sub $t0, $t0, 43 lw $t0, 0($sp) jr $ra";
+        var text = ".data var: .space 8 second: .byte 7 .text .globl main main: li $v0, 4 la $a0, second syscall li $v0, 1 move $a0, $t0 syscall				 li $v0, 4 la $a0, var syscall				jr $ra";
         var syntaxAnalyzer = SyntaxAnalyzer.CreateDefaultSyntaxAnalyzer();
         var pseudoExpander = PseudoInstructionExpander.CreateDefaultPseudoExpander();
         var assembler = new ProgramLinker(syntaxAnalyzer, pseudoExpander);
-        var unlinked = assembler.Parse(unassembledProgram);//new string[] {text}); //
+        var unlinked = assembler.Parse(unassembledProgram); //new string[] {text}); //
         var assembledProgram = assembler.Link(unlinked);
-        // var emulated = new MipsProgram(0x20000000);
-        // emulated.LoadProgram(program.text, program.data);
-        // emulated.RunProgram();
-        if (options.Contains("print")) {
-            Console.WriteLine($"~~~Unlinked~~~\n{unlinked}\n\n~~~Linked~~~\n{assembledProgram}");
-        } else {
-            Console.WriteLine($"~~~Unlinked~~~\n{unlinked}\n\n~~~Linked~~~\n{assembledProgram}");
-        }
+        var emulated = new MipsProgram(0x20000000);
+        emulated.LoadProgram(assembledProgram.text, assembledProgram.data);
+        emulated.RunProgram();
+        // if (options.Contains("print")) {
+        //     Console.WriteLine($"~~~Unlinked~~~\n{unlinked}\n\n~~~Linked~~~\n{assembledProgram}");
+        // } else {
+        //     Console.WriteLine($"~~~Unlinked~~~\n{unlinked}\n\n~~~Linked~~~\n{assembledProgram}");
+        // }
     }
 }
 

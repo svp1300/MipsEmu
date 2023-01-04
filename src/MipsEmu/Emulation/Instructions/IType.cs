@@ -17,7 +17,7 @@ namespace MipsEmu.Emulation.Instructions {
         
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
             var upper = new Bits(32);
-            upper.Store(16, imm.GetValues());
+            upper.Store(0, imm.Load(16, 16));
             hardware.registers.SetRegisterBits(rt, upper);
         }
 

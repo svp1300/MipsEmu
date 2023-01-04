@@ -167,8 +167,6 @@ public class SyntaxAnalyzer {
     public ParseTreeNode BuildTree(Symbol[] symbols) {
         ParseTreeNode root = new ParseTreeNode(null);
         BuildTree(root, symbols, 0);
-        foreach(var s in symbols)
-            Console.WriteLine(s);
         return root;
     }
 
@@ -179,7 +177,7 @@ public class SyntaxAnalyzer {
             var matches = factory.FindMatches(symbols, startIndex);
             foreach (var match in matches) {
                 Token token = factory.Generate(symbols, match, startIndex);
-                if (token.CheckValidMatch()) {
+                if (token.CheckValidMatch()) { // prune
                     var child = parent.AddChild(token);
                     BuildTree(child, symbols, startIndex + match.Item2);
                 } else {

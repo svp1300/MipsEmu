@@ -126,14 +126,35 @@ public class StringArgumentDirectiveToken : DirectiveToken {
 
     public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) { }
 
-    public override long GetBitLength(int alignment) {
-        return 4 * GetSymbolString(2, true).Length; // TODO alignment support
+    public override long GetBitLength(int alignment) {// TODO alignment support
+        string directive = GetSymbolString(1);
+        int length = GetSymbolString(2, true).Length - 2;
+        if (directive.Equals("asciiz"))
+            return 8 * (length + 1);
+        else if (directive.Equals("ascii"))
+            return 8 * length;
+        else
+            throw new ParseException($"Unrecognized dot directive {directive} in string argument form.");
     }
     
     public override TokenType GetTokenType() => TokenType.DIRECTIVE;
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
-        return new Bits(0);
+        string directive = GetSymbolString(1);
+        string value = GetSymbolString(2);
+        value = value.Substring(1, value.Length - 2);
+        int size;
+        if (directive.Equals("asciiz"))
+            size = 8 * (value.Length + 1);
+        else if (directive.Equals("ascii"))
+            size = 8 * value.Length;
+        else
+            throw new ParseException($"Unrecognized dot directive {directive} in string argument form.");
+        var data = new Bits(size);
+
+
+        return data;
+        
     }
 }
 

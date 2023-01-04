@@ -103,12 +103,13 @@ namespace MipsEmu {
         public int GetAsSignedInt() => (int) GetAsSignedLong();
         /// <summary>Get the signed long value using two's compliment.</summary>
         public long GetAsSignedLong() {
+            
             int endianOffset = values.Length - 1;
             long sum = 0;
-            if (values[values.Length - 1]) {
-                sum = -((int) Math.Pow(2, values.Length - 1));
+            if (values[0]) {
+                sum = -((int) Math.Pow(2, endianOffset));
             }
-            for (long index = 1; index <= values.Length - 2; index++) {
+            for (long index = 1; index < values.Length; index++) {
                 if (values[index])
                     sum += (int) Math.Pow(2, endianOffset - index);
             }

@@ -195,9 +195,11 @@ public class ProgramLinker {
     }
 
     private void StoreDataSection(int sectionId, UnlinkedProgram unlinked, Bits data) {
-        var dataBitsList = new LinkedList<Bits>();
+        var dataBitsList = new LinkedList<Bits>();  
+        long sum = 0;
         foreach (var dataToken in programSections[sectionId].directiveTokens) {
             dataBitsList.AddLast((dataToken).MakeValueBits(unlinked, sectionId));
+            sum += (dataToken).MakeValueBits(unlinked, sectionId).GetLength();
         }
         long address = unlinked.GetDataStartAddress(sectionId);
         while (dataBitsList.Count > 0) {

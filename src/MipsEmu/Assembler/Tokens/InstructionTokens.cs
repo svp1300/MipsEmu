@@ -1,35 +1,12 @@
 namespace MipsEmu.Assembler.Tokens;
 
-using MipsEmu.Emulation.Instructions;
-
 public abstract class InstructionToken : Token {
     public static readonly Dictionary<string, bool[]> FUNC_INSTRUCTION_BITS = new Dictionary<string, bool[]>() {
         {"add", IntBits(32, 6)},
         {"addu", new bool[] {true, false, false, false, false, true}},
-        {"and", new bool[] {true, false, false, true, false, false}},
-        {"nor", new bool[] {true, false, false, true, true, true}},
+        {"and", IntBits(36, 6)},
         {"or", new bool[] {true, false, false, true, false, true}},
         {"slt", new bool[] {true, false, true, false, true, false}},
-        {"sltu", new bool[] {true, false, true, false, true, true}},
-        {"sub", new bool[] {true, false, false, false, true, false}},
-        {"subu", new bool[] {true, false, false, false, true, true}},
-        {"xor", new bool[] {true, false, false, true, true, false}},
-        {"sll", new bool[] {false, false, false, false, false, false}},
-        {"sllv", new bool[] {false, false, false, true, false, false}},
-        {"sra", new bool[] {false, false, false, false, true, true}},
-        {"srav", new bool[] {false, false, false, true, true, true}},
-        {"srl", new bool[] {false, false, false, false, true, false}},
-        {"srlv", new bool[] {false, false, false, true, true, false}},
-        
-        {"div", new bool[] {false, true, true, false, true, false}},
-        {"divu", new bool[] {false, true, true, false, true, true}},
-        {"mfhi", new bool[] {false, true, false, false, false, false}},
-        {"mflo", new bool[] {false, true, false, false, true, false}},
-        {"mthi", new bool[] {false, true, false, false, false, true}},
-        {"mtlo", new bool[] {false, true, false, false, true, true}},
-        {"mult", new bool[] {false, true, true, false, false, false}},
-        {"multu", new bool[] {false, true, true, false, false, true}},
-
         {"break", new bool[] {false, false, true, true, false, true}},
         {"jalr", IntBits(9, 6)},
         {"jr", IntBits(8, 6)},
@@ -39,23 +16,18 @@ public abstract class InstructionToken : Token {
 
     public static readonly Dictionary<string, bool[]> OPCODE_INSTRUCTION_BITS = new Dictionary<string, bool[]>() {
         {"addi", IntBits(8, 6)},
+        {"ori", IntBits(13, 6)},
+        {"lui", IntBits(15, 6)},
         {"sub", IntBits(34, 6)},
-        {"addiu", new bool[] {false, false, true, false, false, true}},
-        {"andi", new bool[] {false, false, true, true, false, false}},
-        {"lui", new bool[] {false, false, true, true, true, true}},
-        {"ori", new bool[] {false, false, true, true, false, true}},
-        {"slti", new bool[] {false, false, true, false, true, false}},
-        {"sltiu", new bool[] {false, false, true, false, true, true}},
-        {"xori", new bool[] {false, false, true, true, true, false}},
-        {"beq", new bool[] {false, false, false, true, false, false}},
-        {"bne", new bool[] {false, false, false, true, false, true}},
         {"lb", IntBits(0b100000, 6)},
         {"sw", IntBits(0b101011, 6)},
         {"lbu", IntBits(0b100100, 6)},
         {"lh", IntBits(0b100001, 6)},
         {"lw", IntBits(35, 6)},
         {"j", IntBits(2, 6)},
-        {"jal", IntBits(3, 6)}
+        {"jal", IntBits(3, 6)},
+        {"beq", IntBits(4, 6)},
+        {"bne", IntBits(5, 6)}
 
     };
     public static readonly Dictionary<string, bool[]> REGISTER_BITS = new Dictionary<string, bool[]>() {
@@ -125,7 +97,7 @@ public abstract class InstructionToken : Token {
 
 public class TypeRInstructionToken : InstructionToken {
     public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.REGISTER, SymbolType.COMMA, SymbolType.REGISTER}, true); // add $rs, $rt, $rd
-    public static readonly string[] VALID_NAMES = new string[] {"add", "sub"};
+    public static readonly string[] VALID_NAMES = new string[] {"add", "sub", "slt"};
     public TypeRInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
@@ -268,7 +240,7 @@ public class BranchInstructionToken : InstructionToken {
         // TODO finish
         instruction.Store(21, REGISTER_BITS[GetSymbolString(1)]);
         instruction.Store(16, REGISTER_BITS[GetSymbolString(3)]);
-        long address = unlinked.GetLabelAddress(GetSymbolString(5), sectionId, false);
+        long address = unlinked.GetLabelAddress(GetSymbolString(5), sectionId, true);
         return instruction;
     }
 }
