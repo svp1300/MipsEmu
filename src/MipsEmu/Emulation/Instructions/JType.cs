@@ -1,4 +1,5 @@
 using MipsEmu.Emulation.Registers;
+using MipsEmu.Emulation.Devices;
 
 namespace MipsEmu.Emulation.Instructions;
 

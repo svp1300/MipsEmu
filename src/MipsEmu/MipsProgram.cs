@@ -27,15 +27,21 @@ namespace MipsEmu {
 
         public MipsProgram(long memorySize) {
             hardware = new Hardware(memorySize);
-            pcIncrementBits = new Bits(new bool[] {true, false, false, false, false, false}).SignExtend(26);
+            pcIncrementBits = new Bits(new bool[] {true, false, false, false, false, false}).SignExtend(26, false);
 
         }
 
-        public void LoadProgram(Bits text, Bits data) {
-            hardware.memory.StoreBits(Ram.TEXT_START, text);
-            hardware.memory.StoreBits(Ram.DATA_START, data);
-            hardware.programCounter.SetFromUnsignedLong(Ram.TEXT_START);
-            hardware.registers.SetRegisterBits(31, new Bits(32));
+        public bool LoadProgram(Bits text, Bits data) {
+            try {
+                hardware.memory.StoreBits(Ram.TEXT_START, text);
+                hardware.memory.StoreBits(Ram.DATA_START, data);
+                hardware.programCounter.SetFromUnsignedLong(Ram.TEXT_START);
+                hardware.registers.SetRegisterBits(31, new Bits(32));
+                return true;
+            } catch(IndexOutOfRangeException) {
+                Console.WriteLine("Error! Not enough memory.");
+                return false;
+            }
         }
 
         public void RunProgram() {
@@ -62,7 +68,6 @@ namespace MipsEmu {
                 hardware.programCounter.SetBits(increment);
                 // }
                 IInstruction? instruction = InstructionParser.ParseInstruction(pcBits); // decode
-                Console.WriteLine(instructionAddress + "\t" + instruction);
                 if (instruction == null) {
                     return false;
                 } else {
@@ -79,5 +84,11 @@ namespace MipsEmu {
         }
 
     }
+
+}
+
+public class EmulationException : Exception {
+
+    public EmulationException(string message) : base(message) { }
 
 }

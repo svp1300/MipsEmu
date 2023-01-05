@@ -33,7 +33,7 @@ public class ArgumentlessDirectiveToken : DirectiveToken {
     public override long GetBitLength(int alignment) => 0;
     public override TokenType GetTokenType() => TokenType.DIRECTIVE;
 
-    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long psuedoAddress) {
         return new Bits(0);
     }
 }
@@ -73,7 +73,7 @@ public class NumberArgumentDirectiveToken : DirectiveToken {
         }
     }
 
-    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long psuedoAddress) {
         string directive = GetSymbol(1, true).value.ToLower();
         bool isWord = directive.Equals("word");
         bool isHalf = directive.Equals("half");
@@ -113,7 +113,7 @@ public class TextArgumentDirectiveToken : DirectiveToken {
     
     public override TokenType GetTokenType() => TokenType.DIRECTIVE;
 
-    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long psuedoAddress) {
         return new Bits(0);
     }
 }
@@ -139,7 +139,7 @@ public class StringArgumentDirectiveToken : DirectiveToken {
     
     public override TokenType GetTokenType() => TokenType.DIRECTIVE;
 
-    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long psuedoAddress) {
         string directive = GetSymbolString(1);
         string value = GetSymbolString(2);
         value = value.Substring(1, value.Length - 2);

@@ -55,7 +55,7 @@ public abstract class Token {
     
     public Symbol GetSymbol(int location, bool ignoreWhitespace) => Symbol.GetSymbol(match, location, ignoreWhitespace);
 
-    public abstract Bits MakeValueBits(UnlinkedProgram sections, int sectionId);
+    public abstract Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long pcPsuedoAddress);
 
     public string GetSymbolString(int index, Boolean ignoreWhitespace) => Symbol.GetSymbolString(match, index, ignoreWhitespace);
     public string GetSymbolString(int index) => GetSymbolString(index, true);
@@ -79,7 +79,7 @@ public class LabelToken : Token {
         throw new ParseException("Only dot directives can change the state of the assembler.");
     }
 
-    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long psuedoAddress) {
         throw new NotImplementedException();
     }
     

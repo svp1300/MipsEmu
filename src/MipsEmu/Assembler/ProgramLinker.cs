@@ -1,6 +1,7 @@
 namespace MipsEmu.Assembler;
 
 using MipsEmu.Assembler.Tokens;
+using MipsEmu.Emulation.Instructions;
 using System.Text;
 
 public enum MemorySection {
@@ -113,6 +114,22 @@ public class LinkedProgram {
         this.text = text;
     }
 
+
+    public override string ToString() {
+        var builder = new StringBuilder();
+        for (int i = 0; i < text.GetLength(); i += 32) {
+            var address = 0x00400000 + i;
+            var bits = text.LoadBits(i, 32);
+            var instruction = InstructionParser.ParseInstruction(bits);
+            if (instruction == null) {
+                builder.AppendLine($"{address}\t!!!!");
+            } else {
+                builder.AppendLine($"{address}\t{instruction.InfoString(bits)}");
+            }
+        }
+        return builder.ToString();
+    }
+
 }
 
 public class ProgramLinker {
@@ -145,8 +162,6 @@ public class ProgramLinker {
         // Parse
         Symbol[] symbols = LexicalAnalyzer.FindSymbols(section).ToArray();
         SyntaxParseResult result = syntaxAnalyzer.BuildProgram(symbols);
-    
-        Console.WriteLine(result);
         lock (dataLock) {
             // register
             int id = programSections.Count;
@@ -182,8 +197,10 @@ public class ProgramLinker {
 
     private void StoreTextSection(int sectionId, UnlinkedProgram unlinked, Bits text) {
         var textBitsList = new LinkedList<Bits>();
+        long pcPsuedoAddress = unlinked.GetTextStartAddress(sectionId);
         foreach (var textToken in programSections[sectionId].instructionTokens) {
-            textBitsList.AddLast(((InstructionToken) textToken).MakeValueBits(unlinked, sectionId));
+            textBitsList.AddLast(((InstructionToken) textToken).MakeValueBits(unlinked, sectionId, pcPsuedoAddress));
+            pcPsuedoAddress += 32;
         }
         long address = unlinked.GetTextStartAddress(sectionId);
         while (textBitsList.Count > 0) {
@@ -198,8 +215,8 @@ public class ProgramLinker {
         var dataBitsList = new LinkedList<Bits>();  
         long sum = 0;
         foreach (var dataToken in programSections[sectionId].directiveTokens) {
-            dataBitsList.AddLast((dataToken).MakeValueBits(unlinked, sectionId));
-            sum += (dataToken).MakeValueBits(unlinked, sectionId).GetLength();
+            dataBitsList.AddLast((dataToken).MakeValueBits(unlinked, sectionId, 0));
+            sum += (dataToken).MakeValueBits(unlinked, sectionId, 0).GetLength();
         }
         long address = unlinked.GetDataStartAddress(sectionId);
         while (dataBitsList.Count > 0) {
@@ -215,7 +232,5 @@ public class ProgramLinker {
             }
         }
     }
-
-
 
 }

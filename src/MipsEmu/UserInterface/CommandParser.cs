@@ -5,7 +5,7 @@ using MipsEmu;
 using MipsEmu.Assembler;
 public class CommandParser {
     private static readonly Dictionary<string, Command> COMMANDS = new Dictionary<string, Command> {
-        {"assemble", new AssembleCommand()}
+        {"assemble", new AssembleCommand()}, {"assemblerun", new AssembleRunCommand()}
     };
 
     public static void ParseAndRun(string[] commandLineArguments) {
@@ -41,7 +41,7 @@ public class AssembleCommand : Command {
         else if (arguments.Count == 2)
             path = arguments[1];
         else {
-            Console.WriteLine("Assemble expects one argument at most.");
+            Console.WriteLine("Assemble expects one or two arguments.");
             return;
         }
         string[]? unassembledProgram = ProgramReader.ReadProgram(path);
@@ -49,25 +49,48 @@ public class AssembleCommand : Command {
             Console.WriteLine("Unable to read program!");
             return;
         }
-        // text = ".data values:.byte 5,4,3, 2, 1 beep: .word 16.text .globl main main: addi $t0, $t0, 43 add $t0, $t0, $t1 sub $t4, $s0, $t1 jr $ra";
-        // text = ".globl main main: add $t0, $t0, $t1 add $t0, $t0, $t1 add $t0, $t0, $t1 lw $s0, 0($t0)";
-        var text = ".data var: .space 8 second: .byte 7 .text .globl main main: li $v0, 4 la $a0, second syscall li $v0, 1 move $a0, $t0 syscall				 li $v0, 4 la $a0, var syscall				jr $ra";
         var syntaxAnalyzer = SyntaxAnalyzer.CreateDefaultSyntaxAnalyzer();
         var pseudoExpander = PseudoInstructionExpander.CreateDefaultPseudoExpander();
         var assembler = new ProgramLinker(syntaxAnalyzer, pseudoExpander);
         var unlinked = assembler.Parse(unassembledProgram); //new string[] {text}); //
+        
         var assembledProgram = assembler.Link(unlinked);
-        var emulated = new MipsProgram(0x20000000);
-        emulated.LoadProgram(assembledProgram.text, assembledProgram.data);
-        emulated.RunProgram();
-        // if (options.Contains("print")) {
-        //     Console.WriteLine($"~~~Unlinked~~~\n{unlinked}\n\n~~~Linked~~~\n{assembledProgram}");
-        // } else {
-        //     Console.WriteLine($"~~~Unlinked~~~\n{unlinked}\n\n~~~Linked~~~\n{assembledProgram}");
-        // }
+        if (options.Contains("print")) {
+            Console.WriteLine($"~~~Unlinked~~~\n{unlinked}\n\n~~~Linked~~~\n{assembledProgram}");
+        } else {
+            Console.WriteLine($"~~~Unlinked~~~\n{unlinked}\n\n~~~Linked~~~\n{assembledProgram}");
+        }
     }
 }
 
+public class AssembleRunCommand : Command {
+
+    public override void Run(List<string> arguments, List<string> options) {
+        string path;
+        if (arguments.Count == 1)
+            path = "./";
+        else if (arguments.Count == 2)
+            path = arguments[1];
+        else {
+            Console.WriteLine("Assemblerun expects one or no arguments.");
+            return;
+        }
+        string[]? unassembledProgram = ProgramReader.ReadProgram(path);
+        if (unassembledProgram == null) {
+            Console.WriteLine("Unable to read program!");
+            return;
+        }
+        var syntaxAnalyzer = SyntaxAnalyzer.CreateDefaultSyntaxAnalyzer();
+        var pseudoExpander = PseudoInstructionExpander.CreateDefaultPseudoExpander();
+        var assembler = new ProgramLinker(syntaxAnalyzer, pseudoExpander);
+        var unlinked = assembler.Parse(unassembledProgram);
+        var assembledProgram = assembler.Link(unlinked);
+        Console.WriteLine($"~~~Unlinked~~~\n{unlinked}\n\n~~~Linked~~~\n{assembledProgram}\n~~~Program~~~\n");
+        var emulator = new MipsProgram(0x15000000);
+        emulator.LoadProgram(assembledProgram.text, assembledProgram.data);
+        emulator.RunProgram();
+    }
+}
 public class RunCommand {
 
 }

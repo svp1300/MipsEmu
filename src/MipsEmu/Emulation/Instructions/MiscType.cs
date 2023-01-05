@@ -31,5 +31,9 @@ public class SyscallInstruction : IInstruction {
                 break;
         }
     }
+
+    public string InfoString(Bits bits) {
+        return "S\tSyscallInstruction";
+    }
     
 }

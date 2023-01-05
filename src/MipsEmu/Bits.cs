@@ -99,6 +99,9 @@ namespace MipsEmu {
                 }
             }
         }
+
+        public void SetBit(int index, bool value) => values[index] = value;
+        
         /// <summary>Get the signed integer value using two's compliment.</summary>
         public int GetAsSignedInt() => (int) GetAsSignedLong();
         /// <summary>Get the signed long value using two's compliment.</summary>
@@ -182,14 +185,18 @@ namespace MipsEmu {
             return false;
         }
         
-        public Bits SignExtend(int amount) {
+        public Bits SignExtend(int amount, bool signed) {
             var result = new Bits(GetLength() + amount);
             result.Store(amount, values);
+            bool padValue = signed ? values[0] : false;
+            for (int i = signed ? 1 : 0; i < amount; i++) {
+                result.values[i] = padValue;
+            }
             return result;
         }
 
-        public Bits SignExtend16() {
-            return SignExtend(16);
+        public Bits SignExtend16(bool padValue) {
+            return SignExtend(16, padValue);
         }
         
         public long GetLength() {

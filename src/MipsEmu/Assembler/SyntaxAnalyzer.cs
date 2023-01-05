@@ -180,9 +180,7 @@ public class SyntaxAnalyzer {
                 if (token.CheckValidMatch()) { // prune
                     var child = parent.AddChild(token);
                     BuildTree(child, symbols, startIndex + match.Item2);
-                } else {
-                    Console.WriteLine("invalid token");
-                }
+                } 
             }
         }
     }
@@ -232,7 +230,6 @@ public class SyntaxAnalyzer {
 
         for(int t = 0; t < tokens.Count; t++) {
             Token token = tokens[t];
-            Console.WriteLine(token);
             switch(token.GetTokenType()) {
                 case TokenType.INSTRUCTION:
                     ProcessInstructionToken(token, state, result);

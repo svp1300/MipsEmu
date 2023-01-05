@@ -8,7 +8,7 @@ namespace MipsEmu.Emulation.Instructions {
         public void Load(Hardware hardware, Bits rsValue, int rt, Bits imm, int amount) {
             int address = CalculateStoreAddress(hardware, rsValue, imm).GetAsSignedInt();
             Bits contents = hardware.memory.LoadBits(address, amount);
-            hardware.registers.SetRegisterBits(rt, contents.SignExtend(32 - amount));
+            hardware.registers.SetRegisterBits(rt, contents.SignExtend(32 - amount, true));
         }
 
     }

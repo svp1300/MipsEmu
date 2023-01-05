@@ -100,7 +100,7 @@ public class TypeRInstructionToken : InstructionToken {
     public static readonly string[] VALID_NAMES = new string[] {"add", "sub", "slt"};
     public TypeRInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
 
-    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long psuedoAddress) {
         var instruction = new Bits(32);
         instruction.Store(21, InstructionToken.REGISTER_BITS[GetSymbolString(3)]);
         instruction.Store(16, InstructionToken.REGISTER_BITS[GetSymbolString(5)]);
@@ -117,7 +117,7 @@ public class TypeIInstructionToken : InstructionToken {
     
     public override TokenType GetTokenType() => TokenType.INSTRUCTION;
 
-    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long psuedoAddress) {
         var instruction = new Bits(32);
         instruction.Store(26, InstructionToken.OPCODE_INSTRUCTION_BITS[GetSymbolString(0)]);
         instruction.Store(21, InstructionToken.REGISTER_BITS[GetSymbolString(3)]);
@@ -135,7 +135,7 @@ public class JumpInstructionToken : InstructionToken {
     public static readonly string[] VALID_NAMES = new string[] {"j", "jal"};
     public JumpInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
 
-    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long psuedoAddress) {
         Bits targetBits = new Bits(26);
         long address = sections.GetLabelAddress(GetSymbolString(1), sectionId, true);
         if (address == -1)
@@ -153,7 +153,7 @@ public class MemoryInstructionToken : InstructionToken {
     public static readonly string[] VALID_NAMES = new string[] {"lw", "lh", "lb", "sw", "sh", "sb"};
     public MemoryInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
     
-    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long psuedoAddress) {
         var instruction = new Bits(32);
         
         // imm 0 GetSymbolString(3)
@@ -175,7 +175,7 @@ public class RegisterImmediateInstructionToken :InstructionToken {
 
     public RegisterImmediateInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
 
-    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long psuedoAddress) {
         var instruction = new Bits(32);
         instruction.Store(26, OPCODE_INSTRUCTION_BITS[GetSymbolString(0)]);
         instruction.Store(16, InstructionToken.REGISTER_BITS[GetSymbolString(1)]);
@@ -190,7 +190,7 @@ public class SingleRegisterInstructionToken : InstructionToken {
     public static readonly string[] VALID_NAMES = new string[] {"jr", "jalr"};
     public SingleRegisterInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
 
-    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long psuedoAddress) {
         var instruction = new Bits(32);
         string func = GetSymbol(0, true).value.ToLower();
         
@@ -210,7 +210,7 @@ public class PseudoInstructionToken : InstructionToken {
     public static readonly string[] VALID_NAMES = new string[] {"la", "mult", "move", "li"};
     public PseudoInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
 
-    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long psuedoAddress) {
         throw new NotImplementedException();
     }
 
@@ -220,7 +220,7 @@ public class SyscallInstructionToken : InstructionToken {
     public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.NAME}, true);
     public SyscallInstructionToken(Symbol[] match) : base(match, new string[]{"syscall"}) { }
 
-    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId) {
+    public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long psuedoAddress) {
         Bits instruction = new Bits(32);
         instruction.Store(0, InstructionToken.FUNC_INSTRUCTION_BITS[GetSymbolString(0, true)]);
         return instruction;
@@ -234,13 +234,15 @@ public class BranchInstructionToken : InstructionToken {
     public static readonly string[] VALID_NAMES = new string[] {"beq", "bne", "bge"};
     public BranchInstructionToken(Symbol[] match) : base(match, VALID_NAMES) { }
 
-    public override Bits MakeValueBits(UnlinkedProgram unlinked, int sectionId) {
+    public override Bits MakeValueBits(UnlinkedProgram unlinked, int sectionId, long psuedoAddress) {
         Bits instruction = new Bits(32);
         instruction.Store(26, InstructionToken.OPCODE_INSTRUCTION_BITS[GetSymbolString(0, true)]);
-        // TODO finish
         instruction.Store(21, REGISTER_BITS[GetSymbolString(1)]);
         instruction.Store(16, REGISTER_BITS[GetSymbolString(3)]);
-        long address = unlinked.GetLabelAddress(GetSymbolString(5), sectionId, true);
+        long target = unlinked.GetLabelAddress(GetSymbolString(5), sectionId, true);
+        var offset = new Bits(16);
+        offset.SetFromSignedLong(target - psuedoAddress - 32);
+        instruction.Store(0, offset);
         return instruction;
     }
 }
