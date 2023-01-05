@@ -209,8 +209,10 @@ namespace MipsEmu {
 
 
         public static int BitsToUnsignedInt(bool[] bits) =>  new Bits(bits).GetAsUnsignedInt();
-            
 
+        public override int GetHashCode() {
+            return base.GetHashCode();
+        }
     }
 
 }

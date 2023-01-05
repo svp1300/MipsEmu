@@ -205,6 +205,9 @@ public class ProgramLinker {
         long address = unlinked.GetTextStartAddress(sectionId);
         while (textBitsList.Count > 0) {
             var front = textBitsList.First;
+            if (front == null) {
+                throw new ParseException("Null value in data bits list.");
+            }
             text.Store(address, front.Value);
             textBitsList.RemoveFirst();
             address += 32;
