@@ -42,7 +42,7 @@ public class BitsTest {
     public void SignExtendTest() {
         var cut = new Bits(new bool[] {true, true, true, true});
         Assert.Equal(4, cut.GetLength());
-        cut = cut.SignExtend(4);
+        cut = cut.SignExtend(4, false);
         Assert.Equal(8, cut.GetLength());
         var result = cut.GetValues();
         var target = new bool[] {false, false, false, false, true, true, true, true};
@@ -59,20 +59,20 @@ public class BitsTest {
 
     [Fact]
     public void GetSignedIntTest() {
-        var cut = new Bits(new bool[] {false, true, false, true});
-        Assert.Equal(-6, cut.GetAsSignedInt());
-        cut = new Bits(new bool[] {true, true, true, false});
+        var cut = new Bits(new bool[] {false, true, true, true});
         Assert.Equal(7, cut.GetAsSignedInt());
+        cut = new Bits(new bool[] {true, true, true, false});
+        Assert.Equal(-2, cut.GetAsSignedInt());
     }
 
     // 010101100
     [Fact]
     public void GetSignedIntFromRangeTest() {
                                     //   0      0      1     1     0      1     0     1      0
-        var cut = new Bits(new bool[] {false, false, true, true, false, true, false, true, false});
-        Assert.Equal(-5, cut.GetSignedIntFromRange(2, 4));
-        Assert.Equal(5, cut.GetSignedIntFromRange(3, 4));
-        Assert.Equal(5, cut.GetSignedIntFromRange(5, 4));
+        var cut = new Bits(new bool[] {false, false, true, true, false, false, false, true, false});
+        Assert.Equal(-4, cut.GetSignedIntFromRange(2, 4));
+        Assert.Equal(-8, cut.GetSignedIntFromRange(3, 4));
+        Assert.Equal(2, cut.GetSignedIntFromRange(5, 4));
 
     }
 

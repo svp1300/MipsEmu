@@ -28,7 +28,7 @@ public class InstructionParserTest {
     public void TestRType() {
         var bits = new Bits(32);
         bits.Store(26, new bool[] {false, false, false, false, false, false});
-        bits.Store(0, new bool[] {false, false, false, false, false, true});
+        bits.Store(0, new bool[] {true, false, false, false, false, false});
         var result = InstructionParser.ParseInstruction(bits);
         Assert.NotNull(result);
         Assert.True(result is AddInstruction);
