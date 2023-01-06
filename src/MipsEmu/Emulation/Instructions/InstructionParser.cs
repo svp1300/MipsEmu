@@ -11,12 +11,16 @@ namespace MipsEmu.Emulation.Instructions {
             {3, new JumpAndLinkInstruction()},
             {4, new BranchOnEqualInstruction()},
             {8, new AddImmediateInstruction()},
+            {10, new SetOnLessThanImmediateInstruction()},
             {12, new AndImmediateInstruction()},
             {13, new OrImmediateInstruction()},
             {14, new XorImmediateInstruction()},
             {15, new LoadUpperImmediateInstruction()},
             {34, new SubtractInstruction()},
+            {32, new LoadByteInstruction()},
+            {33, new LoadHalfWordInstruction()},
             {35, new LoadWordInstruction()},
+            
             {43, new StoreWordInstruction()},
         };
 
@@ -24,6 +28,7 @@ namespace MipsEmu.Emulation.Instructions {
             {8, new JumpRegisterInstruction()},
             {12, new SyscallInstruction()},
             {32, new AddInstruction()},
+            {42, new SetOnLessThanInstruction()}
         };
 
 

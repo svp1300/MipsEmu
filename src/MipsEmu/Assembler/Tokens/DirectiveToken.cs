@@ -30,7 +30,7 @@ public class ArgumentlessDirectiveToken : DirectiveToken {
             state.InText = true; 
     }
     
-    public override long GetBitLength(int alignment) => 0;
+    public override long GetByteLength(int alignment) => 0;
     public override TokenType GetTokenType() => TokenType.DIRECTIVE;
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long psuedoAddress) {
@@ -50,15 +50,15 @@ public class NumberArgumentDirectiveToken : DirectiveToken {
 
     public override TokenType GetTokenType() => TokenType.DIRECTIVE;
 
-    public override long GetBitLength(int alignment) {
+    public override long GetByteLength(int alignment) {
         string directive = GetSymbol(1, true).value.ToLower();
         int symbolCount = GetSymbolCount(true);
         if (directive.Equals("byte"))
-            return 8 * ((symbolCount - 1)/2);
+            return (symbolCount - 1)/2;
         else if (directive.Equals("half"))
-            return 16 * ((symbolCount - 1)/2);
+            return 2 * ((symbolCount - 1)/2);
         else if (directive.Equals("word"))
-            return 32 * ((symbolCount - 1)/2);
+            return 4 * ((symbolCount - 1)/2);
         else if (directive.Equals("space"))
             return Int32.Parse(GetSymbolString(2));
         else
@@ -107,7 +107,7 @@ public class TextArgumentDirectiveToken : DirectiveToken {
         }
     }
 
-    public override long GetBitLength(int alignment) {
+    public override long GetByteLength(int alignment) {
         return 0;
     }
     
@@ -126,13 +126,13 @@ public class StringArgumentDirectiveToken : DirectiveToken {
 
     public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) { }
 
-    public override long GetBitLength(int alignment) {// TODO alignment support
+    public override long GetByteLength(int alignment) {// TODO alignment support
         string directive = GetSymbolString(1);
         int length = GetSymbolString(2, true).Length - 2;
         if (directive.Equals("asciiz"))
-            return 8 * (length + 1);
+            return length + 1;
         else if (directive.Equals("ascii"))
-            return 8 * length;
+            return length;
         else
             throw new ParseException($"Unrecognized dot directive {directive} in string argument form.");
     }

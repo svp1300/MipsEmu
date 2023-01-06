@@ -28,10 +28,12 @@ public class UnlinkedProgram  {
     public void CreateSymbolTable() {
         for(int sectionId = 0; sectionId < programSections.Count; sectionId++) {
             foreach(string labelName in programSections[sectionId].globals) {
-                if (symbolTable.ContainsKey(labelName)) {
-                    throw new ParseException("Duplicate global symbol: " + labelName);
-                } else {
-                    symbolTable.Add(labelName, sectionId);
+                if (programSections[sectionId].IsExternalDefinition(labelName)) {
+                    if (symbolTable.ContainsKey(labelName)) {
+                        throw new ParseException("Duplicate global symbol: " + labelName);
+                    } else {
+                        symbolTable.Add(labelName, sectionId);
+                    }
                 }
             }
         }
@@ -91,7 +93,7 @@ public class UnlinkedProgram  {
         builder.AppendLine("~~~~SECTION #" + sectionId + "~~~~");
         foreach (var textLine in program.instructionTokens) {
             builder.AppendLine(textAddress + "\t" + "TEXT" + "\t" + textLine);
-            textAddress += textLine.GetBitLength(2);
+            textAddress += textLine.GetByteLength(2);
         }
     }
 
@@ -118,7 +120,7 @@ public class LinkedProgram {
     public override string ToString() {
         var builder = new StringBuilder();
         for (int i = 0; i < text.GetLength(); i += 32) {
-            var address = 0x00400000 + i;
+            var address = 0x00400000 + i / 8;
             var bits = text.LoadBits(i, 32);
             var instruction = InstructionParser.ParseInstruction(bits);
             if (instruction == null) {
@@ -185,8 +187,8 @@ public class ProgramLinker {
 
     /// <summary>Link each section to create a runnable assembly program.</summary>
     public LinkedProgram Link(UnlinkedProgram unlinked) {
-        var data = new Bits(unlinked.GetDataLength());
-        var text = new Bits(unlinked.GetTextLength());
+        var data = new Bits(8 * unlinked.GetDataLength());
+        var text = new Bits(8 * unlinked.GetTextLength());
         unlinked.CreateSymbolTable();
         for (int sectionId = 0; sectionId < unlinked.GetSectionCount(); sectionId++) {
             StoreTextSection(sectionId, unlinked, text);
@@ -200,7 +202,7 @@ public class ProgramLinker {
         long pcPsuedoAddress = unlinked.GetTextStartAddress(sectionId);
         foreach (var textToken in programSections[sectionId].instructionTokens) {
             textBitsList.AddLast(((InstructionToken) textToken).MakeValueBits(unlinked, sectionId, pcPsuedoAddress));
-            pcPsuedoAddress += 32;
+            pcPsuedoAddress += 4;
         }
         long address = unlinked.GetTextStartAddress(sectionId);
         while (textBitsList.Count > 0) {
@@ -208,9 +210,9 @@ public class ProgramLinker {
             if (front == null) {
                 throw new ParseException("Null value in data bits list.");
             }
-            text.Store(address, front.Value);
+            text.Store(address * 8, front.Value);
             textBitsList.RemoveFirst();
-            address += 32;
+            address += 4;
         }
     }
 
@@ -227,7 +229,7 @@ public class ProgramLinker {
             if (front == null) {
                 throw new ParseException("Null value in data bits list.");
             } else if (front.Value.GetLength() > 0) {
-                data.Store(address, front.Value);
+                data.Store(address * 8, front.Value);
                 dataBitsList.RemoveFirst();
                 address += front.Value.GetLength();
             } else {

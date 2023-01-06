@@ -71,6 +71,16 @@ namespace MipsEmu.Emulation.Instructions {
         }
     }
 
+    public class SetOnLessThanInstruction : InstructionRType {
+        public override void Run(Hardware hardware, Bits rsValue, Bits rtValue, int rd) {
+            Bits result = new Bits(32);
+            if (rsValue.GetAsSignedLong() < rtValue.GetAsSignedLong()) {
+                result.SetBit(31, true);
+            }
+            hardware.registers.SetRegisterBits(rd, result);    
+        }
+    }
+    
     public class BranchOnEqualInstruction :  BranchingInstruction {
 
         public override bool ShouldBranch(long rsValue, long rtValue) {
