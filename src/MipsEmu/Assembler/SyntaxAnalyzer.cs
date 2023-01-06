@@ -63,6 +63,17 @@ public class SyntaxParseResult {
         textLength = -1;
     }
 
+    public bool IsExternalDefinition(string labelName) {
+        foreach(var l in directiveLabels) {
+            if (l.Name.Equals(labelName))
+                return true;
+        }
+        foreach(var l in instructionLabels) {
+            if (l.Name.Equals(labelName))
+                return true;
+        }
+        return false;
+    }
     public Label? GetLabel(string name, bool text) {
         var searchedLabels = text ? instructionLabels : directiveLabels;
         foreach (var label in searchedLabels) {
@@ -258,13 +269,13 @@ public class SyntaxAnalyzer {
 
     public void ProcessInstructionToken(Token token, AnalyzerState state, SyntaxParseResult result) {
         result.instructionTokens.Add(token);
-        state.TextAddress += 32;
+        state.TextAddress += 4;
     }
 
     public void ProcessDirectiveToken(Token token, AnalyzerState state, SyntaxParseResult result) {
         result.directiveTokens.Add(token);
         token.UpdateAssemblerState(state, result); // add globls and change data/text
-        state.DataAddress += token.GetBitLength(state.Alignment);
+        state.DataAddress += token.GetByteLength(state.Alignment);
     }
 
     private void PrintRemaining(Symbol[] symbols, int start) {

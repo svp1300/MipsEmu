@@ -7,8 +7,8 @@ namespace MipsEmu.Emulation.Instructions {
         /// <summary>Retrieve the contents at $rs + imm and store it in $rt.</summary>
         public void Load(Hardware hardware, Bits rsValue, int rt, Bits imm, int amount) {
             int address = CalculateStoreAddress(hardware, rsValue, imm).GetAsSignedInt();
-            Bits contents = hardware.memory.LoadBits(address, amount);
-            hardware.registers.SetRegisterBits(rt, contents.SignExtend(32 - amount, true));
+            Bits contents = hardware.memory.LoadBytes(address, amount);
+            hardware.registers.SetRegisterBits(rt, contents.SignExtend(32 - amount * 8, false));
         }
 
     }
@@ -26,7 +26,7 @@ namespace MipsEmu.Emulation.Instructions {
     public class LoadByteInstruction : LoadInstruction {
 
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
-            Load(hardware, rsValue, rt, imm, 8);
+            Load(hardware, rsValue, rt, imm, 1);
         }
 
     }
@@ -34,7 +34,7 @@ namespace MipsEmu.Emulation.Instructions {
     public class LoadHalfWordInstruction : LoadInstruction {
 
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
-            Load(hardware, rsValue, rt, imm, 16);
+            Load(hardware, rsValue, rt, imm, 2);
         }
         
     }
@@ -42,7 +42,7 @@ namespace MipsEmu.Emulation.Instructions {
     public class LoadWordInstruction : LoadInstruction {
 
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
-            Load(hardware, rsValue, rt, imm, 32);
+            Load(hardware, rsValue, rt, imm, 4);
         }
         
     }
@@ -51,16 +51,16 @@ namespace MipsEmu.Emulation.Instructions {
 
         /// <summary>Store the contents of $rt into $rs + imm.</summary>
         public void Store(Hardware hardware, Bits rsValue, int rt, Bits imm, int storeAmount) {
-            int address = CalculateStoreAddress(hardware, rsValue, imm).GetAsSignedInt();
             Bits rtValue = hardware.registers.GetRegisterBits(rt);
-            hardware.memory.StoreBits(address, rtValue, storeAmount);
+            var address = CalculateStoreAddress(hardware, rsValue, imm).GetAsUnsignedLong();
+            hardware.memory.StoreBytes(address, rtValue, storeAmount);
         }
     }
 
     public class StoreByteInstruction : StoreInstruction {
 
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
-            Store(hardware, rsValue, rt, imm, 8);
+            Store(hardware, rsValue, rt, imm, 1);
         }
     }
 
@@ -68,7 +68,7 @@ namespace MipsEmu.Emulation.Instructions {
 
         /// <summary>Store the contents of $rt into $rs + imm.</summary>
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
-            Store(hardware, rsValue, rt, imm, 16);
+            Store(hardware, rsValue, rt, imm, 2);
         }
     }
 
@@ -76,7 +76,7 @@ namespace MipsEmu.Emulation.Instructions {
 
         /// <summary>Store the contents of $rt into $rs + imm.</summary>
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
-            Store(hardware, rsValue, rt, imm, 32);
+            Store(hardware, rsValue, rt, imm, 4);
         }
     }
 
@@ -109,5 +109,14 @@ namespace MipsEmu.Emulation.Instructions {
         }
     }
 
+    public class SetOnLessThanImmediateInstruction : InstructionIType {
+        public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
+            Bits result = new Bits(32);
+            if (rsValue.GetAsSignedLong() < imm.GetAsSignedLong()) {
+                result.SetBit(31, true);
+            }
+            hardware.registers.SetRegisterBits(rt, result);    
+        }
+    }
 
 }

@@ -64,7 +64,7 @@ public abstract class Token {
     
     // Data/
 
-    public abstract long GetBitLength(int alignment);
+    public abstract long GetByteLength(int alignment);
     public abstract void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results);
     public abstract TokenType GetTokenType();
     
@@ -83,7 +83,7 @@ public class LabelToken : Token {
         throw new NotImplementedException();
     }
     
-    public override long GetBitLength(int alignment) => 0;
+    public override long GetByteLength(int alignment) => 0;
 
     public override bool CheckValidMatch() => true;
     public override TokenType GetTokenType() => TokenType.LABEL;

@@ -17,9 +17,9 @@ namespace MipsEmu.Emulation.Instructions {
             var rt = bits.GetUnsignedIntFromRange(16, 5);
             var rs = bits.GetUnsignedIntFromRange(21, 5);
             
-            Bits sourceValue = hardware.registers.GetRegisterBits(rs);
+            Bits rsValue = hardware.registers.GetRegisterBits(rs);
 
-            Run(hardware, sourceValue, rt, imm);
+            Run(hardware, rsValue, rt, imm);
         }
 
         public Bits CalculateStoreAddress(Hardware hardware, Bits rsValue, Bits imm) {
