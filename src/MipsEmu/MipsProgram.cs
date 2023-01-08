@@ -63,24 +63,22 @@ namespace MipsEmu {
                 throw new Exception("Instructions must be on 32 aligned addresses.");
             } else {
                 var pcBits = hardware.memory.LoadBytes(instructionAddress, 4); // fetch
-                // if (hardware.skipPCIncrement) {
-                //     hardware.skipPCIncrement = false;
-                // } else {
+                
                 Bits increment = Alu.AddUnsigned(hardware.programCounter.GetBits(), pcIncrementBits);
                 hardware.programCounter.SetBits(increment);
-                // }
+                
                 IInstruction? instruction = InstructionParser.ParseInstruction(pcBits); // decode
-                Console.WriteLine(instruction.InfoString(pcBits));
                 if (instruction == null) {
                     return false;
                 } else {
-                    // try {
+                    Console.WriteLine(instruction.InfoString(pcBits));
+                    try {
                         instruction.Run(hardware, pcBits);  // execute
                         return true;
-                    // } catch(Exception e) {
-                        // Console.WriteLine(e);
-                        // return false;
-                    // }
+                    } catch(Exception e) {
+                        Console.WriteLine(e);
+                        return false;
+                    }
                 }
             }
             
