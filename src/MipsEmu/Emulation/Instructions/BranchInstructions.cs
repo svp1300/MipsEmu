@@ -1,1 +1,0 @@
-namespace MipsEmu.Emulation.Instructions;

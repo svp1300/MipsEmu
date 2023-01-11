@@ -27,11 +27,17 @@ namespace MipsEmu {
     public class MipsProgram {
         private Hardware hardware;
         private Bits pcIncrementBits;
+        private bool verbose;
 
         public MipsProgram(long memorySize) {
             hardware = new Hardware(memorySize);
             pcIncrementBits = new Bits(new bool[] {false, false, false, true, false, false}).SignExtend(26, false);
+            verbose = false;
 
+        }
+
+        public MipsProgram(long memorySize, bool verbose) : this(memorySize) {
+            this.verbose = verbose;
         }
 
         public bool LoadProgram(Bits text, Bits data) {
@@ -46,7 +52,7 @@ namespace MipsEmu {
             }
         }
 
-        public void RunProgram() {
+        public virtual void RunProgram() {
             while (!hardware.exit) {
                 var result = Cycle();
                 if (!result) {
@@ -56,8 +62,16 @@ namespace MipsEmu {
             }
             // Console.WriteLine(hardware.registers);
         }
+
+        protected Hardware GetHardware() {
+            return hardware;
+        }
+
+        public long GetPCValue() {
+            return hardware.programCounter.GetBits().GetAsUnsignedLong();
+        }
         
-        public virtual bool Cycle() {
+        public bool Cycle() {
             long instructionAddress = hardware.programCounter.GetBits().GetAsUnsignedLong();
             if (instructionAddress % 4 != 0) {
                 throw new Exception("Instructions must be on 32 aligned addresses.");
@@ -71,7 +85,9 @@ namespace MipsEmu {
                 if (instruction == null) {
                     return false;
                 } else {
-                    Console.WriteLine(instruction.InfoString(pcBits));
+                    if (verbose) {
+                        Console.WriteLine(instruction.InfoString(pcBits));
+                    }
                     try {
                         instruction.Run(hardware, pcBits);  // execute
                         return true;
