@@ -1,5 +1,6 @@
-.globl foo
 .globl nothing
+.globl foo
+
 foo:
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)

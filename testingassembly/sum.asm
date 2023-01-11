@@ -21,9 +21,13 @@ number_prompt_string:
 	.globl main
 
 main:
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
 	jal read_array	
 	move $a0, $v0
-	jal sum_array	
+	jal sum_array
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4	
 	jr $ra
 
 sum_array:

@@ -241,7 +241,7 @@ public class BranchInstructionToken : InstructionToken {
         instruction.Store(16, REGISTER_BITS[GetSymbolString(3)]);
         long target = unlinked.GetLabelAddress(GetSymbolString(5), sectionId, true);
         var offset = new Bits(16);
-        offset.SetFromSignedLong(target - psuedoAddress - 32);
+        offset.SetFromSignedLong(target - psuedoAddress - 4);
         instruction.Store(0, offset);
         return instruction;
     }
