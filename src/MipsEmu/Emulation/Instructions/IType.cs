@@ -17,7 +17,7 @@ namespace MipsEmu.Emulation.Instructions {
         
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
             var upper = new Bits(32);
-            upper.Store(0, imm.Load(16, 16));
+            upper.Store(0, imm.Load(0, 16));
             hardware.registers.SetRegisterBits(rt, upper);
         }
 
@@ -92,20 +92,20 @@ namespace MipsEmu.Emulation.Instructions {
     public class AndImmediateInstruction : InstructionIType {
 
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
-            hardware.registers.SetRegisterBits(rt, Alu.And(rsValue, imm));
+            hardware.registers.SetRegisterBits(rt, Alu.And(rsValue, imm.SignExtend16(false)));
         }
     }
 
     public class OrImmediateInstruction : InstructionIType {
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
-            hardware.registers.SetRegisterBits(rt, Alu.Or(rsValue, imm));
+            hardware.registers.SetRegisterBits(rt, Alu.Or(rsValue, imm.SignExtend16(false)));
         }
     }
 
     public class XorImmediateInstruction : InstructionIType {
 
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
-            hardware.registers.SetRegisterBits(rt, Alu.Xor(rsValue, imm));
+            hardware.registers.SetRegisterBits(rt, Alu.Xor(rsValue, imm.SignExtend16(false)));
         }
     }
 

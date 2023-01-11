@@ -63,6 +63,7 @@ public class SyntaxParseResult {
         textLength = -1;
     }
 
+    /// <summary>Determine whether a label is a external definition.</summary>
     public bool IsExternalDefinition(string labelName) {
         foreach(var l in directiveLabels) {
             if (l.Name.Equals(labelName))
@@ -74,6 +75,8 @@ public class SyntaxParseResult {
         }
         return false;
     }
+
+    /// <summary>Find a label inside the section.</summary>
     public Label? GetLabel(string name, bool text) {
         var searchedLabels = text ? instructionLabels : directiveLabels;
         foreach (var label in searchedLabels) {
@@ -83,9 +86,14 @@ public class SyntaxParseResult {
         return null;
     }
     
+
+    /// <summary>Find all the external references in data.</summary>
     public List<Label> GetExternalDataReferences() => GetExternalReferences(directiveLabels);
+
+    /// <summary>Find all the external references in text.</summary>
     public List<Label> GetExternalTextReferences() => GetExternalReferences(instructionLabels);
 
+    /// <summary>Find all the external references in the given list.</summary>
     private List<Label> GetExternalReferences(List<Label> labels) {
         var external = new List<Label>();
         foreach(var labelName in globals) {
@@ -121,6 +129,8 @@ public class SyntaxParseResult {
 
 }
 
+
+/// <summary>The state of this stage of the assembler.</summary>
 public class AnalyzerState {
     public long DataAddress {get; set;}
     public long TextAddress {get; set;}
@@ -258,6 +268,7 @@ public class SyntaxAnalyzer {
         return result;
     }
 
+    /// <summary>Add a label to the result from a label token.</summary>
     public void CreateLabel(SyntaxParseResult result, AnalyzerState state, Token token) {
         string labelName = token.GetSymbol(0, true).value;
         if (state.InText) {
@@ -285,6 +296,7 @@ public class SyntaxAnalyzer {
         Console.WriteLine(builder.ToString());
     }
 
+    /// <summary>Register a tokenform with the analyzer, so that it can be added to the parse tree.</summary>
     public void AddTokenForm(ITokenForm form, Func<Symbol[], Token> generator) {
         factory.AddTokenForm(form, generator);
     }

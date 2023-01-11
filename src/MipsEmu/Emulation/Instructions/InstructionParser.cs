@@ -10,6 +10,7 @@ namespace MipsEmu.Emulation.Instructions {
             {2, new JumpInstruction()},
             {3, new JumpAndLinkInstruction()},
             {4, new BranchOnEqualInstruction()},
+            {5, new BranchOnNotEqualInstruction()},
             {8, new AddImmediateInstruction()},
             {10, new SetOnLessThanImmediateInstruction()},
             {12, new AndImmediateInstruction()},

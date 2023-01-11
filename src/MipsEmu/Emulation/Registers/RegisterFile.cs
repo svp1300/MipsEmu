@@ -16,6 +16,7 @@ namespace MipsEmu.Emulation.Registers {
             }
         }
 
+        /// <summary>Get the bits contained inside the register at the index.</summary>
         public Bits GetRegisterBits(int index) {
             if (index < 0 || index > 31) {
                 throw new Exception("Index out of range for register file.");
@@ -24,6 +25,7 @@ namespace MipsEmu.Emulation.Registers {
             }
         }
 
+        /// <summary>Update the bits contained inside the register at the index.</summary>
         public void SetRegisterBits(int index, Bits bits) {
             if (index < 0 || index > 31) {
                 throw new Exception("Index out of range for register file.");
@@ -32,6 +34,7 @@ namespace MipsEmu.Emulation.Registers {
             }
         }
 
+        /// <summary>Appends the contents of each register to a string.</summary>
         public override string ToString() {
             var builder = new StringBuilder();
             builder.AppendLine("Register File:");

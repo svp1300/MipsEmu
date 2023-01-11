@@ -1,6 +1,5 @@
-using MipsEmu.Emulation.Registers;
+
 using MipsEmu.Emulation.Devices;
-using MipsEmu.Emulation;
 
 namespace MipsEmu.Emulation.Instructions {
 
@@ -10,6 +9,7 @@ namespace MipsEmu.Emulation.Instructions {
         string InfoString(Bits bits);
     }
 
+    /// <summary>Parent class for I type instructions. Calls subclasses with rs, rt, and imm taken from the instruction.</summary>
     public abstract class InstructionIType : IInstruction {
         public static readonly Interval RS_BITS = new Interval(16, 5);
         public virtual void Run(Hardware hardware, Bits bits) {
@@ -36,6 +36,7 @@ namespace MipsEmu.Emulation.Instructions {
         }
     }
 
+    /// <summary>Parent class for R type instructions. Calls subclasses with rs, rt, and rd taken from the instruction.</summary>
     public abstract class InstructionRType : IInstruction {
 
 
@@ -56,6 +57,7 @@ namespace MipsEmu.Emulation.Instructions {
         }
     }
 
+    /// <summary>Parent class for R type instructions. Calls subclasses with the pseudoaddress taken from the instruction.</summary>
     public abstract class InstructionJType : IInstruction {
 
         public virtual void Run(Hardware hardware, Bits instruction) {
@@ -78,6 +80,8 @@ namespace MipsEmu.Emulation.Instructions {
         }
     }
 
+
+    /// <summary>Extension of I type instructions for branches. Calls subclasses with the two values being compared and handles the PC destination calculation..</summary>
     public abstract class BranchingInstruction : InstructionIType {
 
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
@@ -88,6 +92,7 @@ namespace MipsEmu.Emulation.Instructions {
             }
         }
 
+        /// <summary>Whether the branch should go to the destination.</summary>
         public abstract bool ShouldBranch(long rsValue, long rtValue);
     }
 

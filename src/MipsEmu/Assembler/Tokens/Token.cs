@@ -7,6 +7,7 @@ public class TokenFactory {
         templates = new Dictionary<ITokenForm, Func<Symbol[], Token>>();
     }
 
+    /// <summary>Find each match to a known template and add the form and length, in a tuple, to the returned list.</summary>
     public List<Tuple<ITokenForm, int>> FindMatches(Symbol[] symbols, int begin) {
         var matches = new List<Tuple<ITokenForm, int>>();
         foreach (var form in templates.Keys) {
@@ -18,11 +19,13 @@ public class TokenFactory {
         return matches;
     }
 
+    /// <summary>Create a token from a match.</summary>
     public Token Generate(Symbol[] symbols, Tuple<ITokenForm, int> match, int begin) {
         var matchSymbols = GetSubArray(symbols, begin, begin + match.Item2);
         return templates[match.Item1].Invoke(matchSymbols);
     }
 
+    /// <summary>Register a token form and generator.</summary>
     public void AddTokenForm(ITokenForm form, Func<Symbol[], Token> generator) {
         templates[form] = generator;
     }
@@ -61,8 +64,6 @@ public abstract class Token {
     public string GetSymbolString(int index) => GetSymbolString(index, true);
 
     public int GetSymbolCount(bool ignoreWhitespace) => Symbol.GetSymbolCount(match, ignoreWhitespace);
-    
-    // Data/
 
     public abstract long GetByteLength(int alignment);
     public abstract void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results);

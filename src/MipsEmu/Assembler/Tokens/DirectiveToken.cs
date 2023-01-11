@@ -151,8 +151,11 @@ public class StringArgumentDirectiveToken : DirectiveToken {
         else
             throw new ParseException($"Unrecognized dot directive {directive} in string argument form.");
         var data = new Bits(size);
-
-
+        for (int i = 0; i < value.Length; i++) {
+            var b = new Bits(8);
+            b.SetFromUnsignedInt(value[i]);
+            data.Store(i * 8, b);
+        }
         return data;
         
     }
