@@ -9,6 +9,7 @@ public class PseudoInstructionExpander {
         pseudoInstructions = new List<PseudoInstruction>();
     }
 
+    /// <summary>Offset the labels after an expanded instruction, so that they are functionally equivalent.</summary>
     private void FixSectionLabels(int instructionIndex, int expansionOffset, SyntaxParseResult section) {
         for (int labelIndex = 0; labelIndex < section.instructionLabels.Count; labelIndex++) {
             var label = section.instructionLabels[labelIndex];
@@ -18,6 +19,7 @@ public class PseudoInstructionExpander {
         }
     }
 
+    /// <summary>Replace all the pseudoinstructions in a section.</summary>
     private int FixSection(UnlinkedProgram unlinked, int sectionId) {
         SyntaxParseResult section = unlinked.GetSection(sectionId);
         int expansion = 0;
@@ -45,10 +47,12 @@ public class PseudoInstructionExpander {
         return expansion;
     }
 
+    /// <summary>Add a pseudoinstruction to the supported list.</summary>
     public void AddPseudoInstruction(PseudoInstruction pseudoInstruction) {
         pseudoInstructions.Add(pseudoInstruction);
     }
 
+    /// <summary>Replaces each supported pseudoinstruction with a corresponding group of real instructions.</summary>
     public UnlinkedProgram ReplacePseudoInstructions(UnlinkedProgram program) {
         int instructionDelta = 0;
         for(int sectionId = 0; sectionId < program.GetSectionCount(); sectionId++) {

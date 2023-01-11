@@ -3,7 +3,10 @@ namespace MipsEmu.UserInterface;
 using MipsEmu;
 using MipsEmu.Debug;
 using MipsEmu.Assembler;
+
+/// <summary>Assembles from the path and either prints or writes the results.</summary>
 public class AssembleCommand : Command {
+
     public static LinkedProgram? AssembleProgram(string path, bool print) {
        string[]? unassembledProgram = ProgramReader.ReadAllWithExtension(path, ".asm");
         if (unassembledProgram == null) {
@@ -39,6 +42,7 @@ public class AssembleCommand : Command {
     }
 }
 
+/// <summary>Assembles the program fom a path and runs it in stdout/stdin.</summary>
 public class AssembleRunCommand : Command {
 
     public override void Run(List<string> arguments, List<string> options, Dictionary<string, object> supportingObjects) {
@@ -60,6 +64,7 @@ public class AssembleRunCommand : Command {
     }
 }
 
+/// <summary>Assembles the program fom a path and runs the debugging tool.</summary>
 public class AssembleDebugCommand : Command {
 
     public override void Run(List<string> arguments, List<string> options, Dictionary<string, object> supportingObjects) {
@@ -81,6 +86,7 @@ public class AssembleDebugCommand : Command {
     }
 }
 
+/// <summary>Runs the mips program at the given path.</summary>
 public class RunCommand : Command {
     public override void Run(List<string> arguments, List<string> options, Dictionary<string, object> supportingObjects) {
         if (arguments.Count != 3) {
@@ -97,6 +103,7 @@ public class RunCommand : Command {
 
 }
 
+/// <summary>Runs the debugging tool on the program at the given path.</summary>
 public class DebugCommand : Command {
     public override void Run(List<string> arguments, List<string> options, Dictionary<string, object> supportingObjects) {
         if (arguments.Count != 3) {

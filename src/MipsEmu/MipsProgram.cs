@@ -86,16 +86,16 @@ namespace MipsEmu {
                 if (instruction == null) {
                     return false;
                 } else {
-                    if (verbose) {
+                    // if (verbose) {
                         Console.WriteLine(instruction.InfoString(pcBits));
-                    }
-                    try {
+                    // }
+                    // try {
                         instruction.Run(hardware, pcBits);  // execute
                         return true;
-                    } catch(Exception e) {
-                        Console.WriteLine(e);
-                        return false;
-                    }
+                    // } catch(Exception e) {
+                        // Console.WriteLine(e);
+                        // return false;
+                    // }
                 }
             }
             

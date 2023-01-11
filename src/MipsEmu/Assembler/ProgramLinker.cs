@@ -54,7 +54,7 @@ public class UnlinkedProgram  {
     }
 
     public void IncreaseTextSum(int instructionAmount) {
-        textSum += 32 * instructionAmount;
+        textSum += 4 * instructionAmount;
     }
 
     public long GetDataLength() => dataSum;
@@ -91,6 +91,12 @@ public class UnlinkedProgram  {
         var program = programSections[sectionId];
         long textAddress = 0;
         builder.AppendLine("~~~~SECTION #" + sectionId + "~~~~");
+        foreach (var label in program.instructionLabels) {
+            builder.AppendLine($"TEXT\t{label}");
+        }
+        foreach (var label in program.directiveLabels) {
+            builder.AppendLine($"DATA\t{label}");
+        }
         foreach (var textLine in program.instructionTokens) {
             builder.AppendLine(textAddress + "\t" + "TEXT" + "\t" + textLine);
             textAddress += textLine.GetByteLength(2);
@@ -201,18 +207,9 @@ public class ProgramLinker {
         var textBitsList = new LinkedList<Bits>();
         long pcPsuedoAddress = unlinked.GetTextStartAddress(sectionId);
         foreach (var textToken in programSections[sectionId].instructionTokens) {
-            textBitsList.AddLast(((InstructionToken) textToken).MakeValueBits(unlinked, sectionId, pcPsuedoAddress));
+            var instruction = ((InstructionToken) textToken).MakeValueBits(unlinked, sectionId, pcPsuedoAddress);
+            text.Store(pcPsuedoAddress * 8, instruction);
             pcPsuedoAddress += 4;
-        }
-        long address = unlinked.GetTextStartAddress(sectionId);
-        while (textBitsList.Count > 0) {
-            var front = textBitsList.First;
-            if (front == null) {
-                throw new ParseException("Null value in data bits list.");
-            }
-            text.Store(address * 8, front.Value);
-            textBitsList.RemoveFirst();
-            address += 4;
         }
     }
 
@@ -222,6 +219,7 @@ public class ProgramLinker {
         foreach (var dataToken in programSections[sectionId].directiveTokens) {
             dataBitsList.AddLast((dataToken).MakeValueBits(unlinked, sectionId, 0));
             sum += (dataToken).MakeValueBits(unlinked, sectionId, 0).GetLength();
+            
         }
         long address = unlinked.GetDataStartAddress(sectionId);
         while (dataBitsList.Count > 0) {
@@ -229,7 +227,7 @@ public class ProgramLinker {
             if (front == null) {
                 throw new ParseException("Null value in data bits list.");
             } else if (front.Value.GetLength() > 0) {
-                data.Store(address * 8, front.Value);
+                data.Store(address, front.Value);
                 dataBitsList.RemoveFirst();
                 address += front.Value.GetLength();
             } else {

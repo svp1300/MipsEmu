@@ -1,4 +1,4 @@
-
+using System.Text;
 namespace MipsEmu.Emulation.Devices {
 
     public class Ram {
@@ -31,6 +31,15 @@ namespace MipsEmu.Emulation.Devices {
             return read;
         }
         
+        public string ReadString(long address) {
+            var builder = new StringBuilder();
+            char character = 'a';
+            for (int index = 0; character != 0; index++) {
+                character = (char) LoadBytes(address + index, 1).GetAsUnsignedInt();
+                builder.Append(character);
+            }
+            return builder.ToString();
+        }
     }
    
 
