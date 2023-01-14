@@ -72,7 +72,7 @@ public abstract class InstructionToken : Token {
     }
     public override TokenType GetTokenType() => TokenType.INSTRUCTION;
 
-    public override long GetByteLength(int alignment) => 32;
+    public override long GetByteLength(int alignment) => 4;
 
     public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) {
         throw new ParseException("Only dot directives can change the state of the assembler.");

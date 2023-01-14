@@ -3,6 +3,7 @@ using MipsEmu.Emulation;
 namespace MipsEmu.Emulation.Registers {
 
 
+    /// <summary>Unmodifiable register for $zero.</summary>
     public class ZeroRegister : Register {
 
         public override void SetBits(Bits bits) {

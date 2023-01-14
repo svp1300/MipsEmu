@@ -15,6 +15,7 @@ public class Symbol {
         return value + ": " + type;
     }
 
+    ///<summary>True when the SymbolType and value are equal.</summary>
     public override bool Equals([NotNullWhen(true)] object? obj) {
         if (obj is Symbol) {
             var other = (Symbol) obj;
@@ -25,6 +26,7 @@ public class Symbol {
 
     public override int GetHashCode() => value.GetHashCode();
 
+    ///<summary>Returns the symbols in a range from a match.</summary>
     public static Symbol[] GetSymbols(Symbol[] match, int start, int end, bool ignoreWhitespace) {
         var result = new Symbol[end - start];
         int index = 0;
@@ -42,15 +44,19 @@ public class Symbol {
         return result;
     }
 
+    ///<summary>Returns the symbol from an index in a match.</summary>
     public static Symbol GetSymbol(Symbol[] match, int location, bool ignoreWhitespace) {
         return GetSymbols(match, location, location + 1, ignoreWhitespace)[0];
     }
 
 
+    ///<summary>Returns the text in a symbol at a location in the match.</summary>
     public static string GetSymbolString(Symbol[] match, int index, Boolean ignoreWhitespace) => GetSymbol(match, index, ignoreWhitespace).value;
     
+    ///<summary>GetSymbolString, but with ignoreWhitespace as true.</summary>
     public static string GetSymbolString(Symbol[] match, int index) => GetSymbolString(match, index, true);
 
+    ///<summary>Get the number of symbols in a match.</summary>
     public static int GetSymbolCount(Symbol[] match, bool ignoreWhitespace) {
         int count = 0;
         foreach(var sym in match) {
@@ -60,13 +66,6 @@ public class Symbol {
         }
         return count;
     }
-}
-
-public class LazySymbol : Symbol {
-    public LazySymbol(SymbolType type) : base("", type) {
-
-    }
-
 }
 
 /// <summary>Represents the lexical specification for a symbol and its categorization.</sumary>

@@ -53,10 +53,6 @@ namespace MipsEmu {
         public float GetAsFloat() {
             return 0;
         }
-
-        public string GetAsString() {
-            return "";
-        }
         
         public Bits LoadBits(long offset, int size) {
             return new Bits(Load(offset, size));

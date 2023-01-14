@@ -14,7 +14,8 @@ public class SyscallInstruction : IInstruction {
                 Console.WriteLine(hardware.registers.GetRegisterBits(RegisterFile.REGISTER_INDICES["f12"]).GetAsFloat());
                 break;
             case 4:
-                Console.WriteLine(hardware.registers.GetRegisterBits(RegisterFile.REGISTER_INDICES["a0"]).GetAsString());
+                var address = hardware.registers.GetRegisterBits(RegisterFile.REGISTER_INDICES["a0"]).GetAsUnsignedLong();
+                Console.Write(hardware.memory.ReadString(address));
                 break;
             case 5:
                 var input = new Bits(32);

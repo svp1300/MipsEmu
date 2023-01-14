@@ -3,7 +3,9 @@ namespace MipsEmu.Assembler.Tokens;
 
 public interface ITokenForm {
 
+    /// <summary>Finds the length of the form's match starting from an offset.</summary>
     int Match(Symbol[] symbols, int begin);
+    /// <summary>Whether it should keep trying to match.<summary>
     bool ShouldStop(int matchLength);
 
 }
@@ -87,34 +89,4 @@ public class FixedTokenForm : ITokenForm {
     }
 
     public bool ShouldStop(int matchLength) => matchLength == 0;
-}
-
-public class TokenDefinition {
-    private ITokenForm form;
-    private Dictionary<string, Func<Symbol[], Token>> possibleMatches;
-
-    public TokenDefinition(ITokenForm form) {
-        this.form = form;
-        possibleMatches = new Dictionary<string, Func<Symbol[], Token>>();
-    }
-
-    /// <summary> Checks if the symbols matches the lexical pattern definition. If so, returns a token if the operation is known and throws an exception otherwise.</summary>
-    public Token? TryCreate(Symbol[] symbols, int begin) {
-        int length = form.Match(symbols, begin);
-        if (length == 0)
-            return null;
-        else {
-            var operation = Symbol.GetSymbolString(symbols, begin, true);
-            if (possibleMatches.ContainsKey(operation)) {
-                return possibleMatches[operation].Invoke(Symbol.GetSymbols(symbols, begin, length, true));
-            } else {
-                throw new ParseException($"Unknown/unregistered operation: {operation}");
-            }
-        }
-    }
-
-    public void AddOperation(string name, Func<Symbol[], Token> tokenCreator) {
-        possibleMatches.Add(name, tokenCreator);
-    }
-
 }

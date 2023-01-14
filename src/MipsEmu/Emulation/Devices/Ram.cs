@@ -1,9 +1,9 @@
-
+using System.Text;
 namespace MipsEmu.Emulation.Devices {
 
     public class Ram {
         public static readonly long TEXT_START = 0x00400000;
-        public static readonly long DATA_START = 0x10000000;
+        public static readonly long DATA_START = 0x10010000;
         public static readonly long USER_ACCESSIBLE_START = TEXT_START;
         public static readonly long USER_ACCESSIBLE_END = 0x80000000;
         private Bits?[] memory;
@@ -31,6 +31,15 @@ namespace MipsEmu.Emulation.Devices {
             return read;
         }
         
+        public string ReadString(long address) {
+            var builder = new StringBuilder();
+            char character = 'a';
+            for (int index = 0; character != 0; index++) {
+                character = (char) LoadBytes(address + index, 1).GetAsUnsignedInt();
+                builder.Append(character);
+            }
+            return builder.ToString();
+        }
     }
    
 

@@ -32,7 +32,7 @@ namespace MipsEmu.Emulation.Devices {
         }
 
         private static Bits BitwiseOperation(Bits a, Bits b, Func<bool,bool,bool> operation) {
-            bool[] result = new bool[a.GetLength()];
+            bool[] result = new bool[Math.Min(a.GetLength(), b.GetLength())];
             for(int i = 0; i < result.Length; i++) {
                 result[i] = operation.Invoke(a.GetBit(i), b.GetBit((i)));
             }

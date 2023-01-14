@@ -9,15 +9,17 @@ public class PseudoInstructionExpander {
         pseudoInstructions = new List<PseudoInstruction>();
     }
 
-    private void FixSectionLabels(int instructionIndex, int expansionOffset, SyntaxParseResult section) {
+    /// <summary>Offset the labels after an expanded instruction, so that they are functionally equivalent.</summary>
+    private void FixSectionLabels(int instructionIndex, int expansionOffset, long sectionTextStart, SyntaxParseResult section) {
         for (int labelIndex = 0; labelIndex < section.instructionLabels.Count; labelIndex++) {
             var label = section.instructionLabels[labelIndex];
-            if (label.GetAddress() > instructionIndex * 32)  {
-                label.AddAddressOffset(expansionOffset * 32);
+            if (label.GetAddress() > sectionTextStart + instructionIndex * 4)  {
+                label.AddAddressOffset(expansionOffset * 4);
             }
         }
     }
 
+    /// <summary>Replace all the pseudoinstructions in a section.</summary>
     private int FixSection(UnlinkedProgram unlinked, int sectionId) {
         SyntaxParseResult section = unlinked.GetSection(sectionId);
         int expansion = 0;
@@ -35,7 +37,7 @@ public class PseudoInstructionExpander {
             if (update.Length != 0) {
                 section.instructionTokens.RemoveAt(index);
                 section.instructionTokens.InsertRange(index, update);
-                FixSectionLabels(index, update.Length - 1, section);
+                FixSectionLabels(index, update.Length - 1, unlinked.GetTextStartAddress(sectionId), section);
                 index += update.Length;
                 expansion += update.Length - 1;
             } else {
@@ -45,10 +47,12 @@ public class PseudoInstructionExpander {
         return expansion;
     }
 
+    /// <summary>Add a pseudoinstruction to the supported list.</summary>
     public void AddPseudoInstruction(PseudoInstruction pseudoInstruction) {
         pseudoInstructions.Add(pseudoInstruction);
     }
 
+    /// <summary>Replaces each supported pseudoinstruction with a corresponding group of real instructions.</summary>
     public UnlinkedProgram ReplacePseudoInstructions(UnlinkedProgram program) {
         int instructionDelta = 0;
         for(int sectionId = 0; sectionId < program.GetSectionCount(); sectionId++) {
