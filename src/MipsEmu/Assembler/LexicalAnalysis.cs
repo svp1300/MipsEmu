@@ -44,7 +44,9 @@ public class LexicalAnalyzer {
             if (longestMatch == null || longestMatch.Length == 0 || longestMatchType == null) {
                 throw new ParseException("Failed to find symbol in remaining text.");
             } else {
-                symbols.Add(new Symbol(longestMatch, longestMatchType.Value));
+                if (!longestMatchType.Equals(SymbolType.COMMENT)) {
+                    symbols.Add(new Symbol(longestMatch, longestMatchType.Value));
+                }
                 position += longestMatch.Length;
             }
         }

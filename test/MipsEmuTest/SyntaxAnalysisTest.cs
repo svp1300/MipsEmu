@@ -8,7 +8,7 @@ public class SyntaxAnalysisTest {
 
     [Fact]
     public void TestLAExample() {
-        var example = ".data message:.asciiz \"Hello world!\\n\" .text .globl main main: la $a0, message li $v0, 4 syscall jr $ra";
+        var example = ".data message:.asciiz \"Hello world!\\n\" .text #hello\n.globl main main: la $a0, message li $v0, 4 syscall jr $ra";
         var symbols = LexicalAnalyzer.FindSymbols(example);
         var syntax = SyntaxAnalyzer.CreateDefaultSyntaxAnalyzer();
         var result = syntax.BuildProgram(symbols);
