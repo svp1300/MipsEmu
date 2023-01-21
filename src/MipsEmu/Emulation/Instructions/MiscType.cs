@@ -19,7 +19,7 @@ public class SyscallInstruction : IInstruction {
                 break;
             case 5:
                 var input = new Bits(32);
-                string? line = "69";//Console.ReadLine();
+                string? line = Console.ReadLine();
                 if (line == null)
                     throw new Exception("Couldn't read line.");
                 input.SetFromSignedInt(Int32.Parse(line));
