@@ -18,7 +18,7 @@ public class BreakpointCommand : DebugCommand {
             Console.WriteLine("Expected one argument: instruction_address");
             return;
         }
-        debugger.AddBreakpoint(long.Parse(arguments[1]));
+        debugger.AddBreakpoint(Convert.ToInt64(arguments[1], 16));
     }
 
 }
