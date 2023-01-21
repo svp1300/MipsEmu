@@ -85,7 +85,7 @@ namespace MipsEmu.Emulation.Instructions {
     public abstract class BranchingInstruction : InstructionIType {
 
         public override void Run(Hardware hardware, Bits rsValue, int rt, Bits imm) {
-            if (ShouldBranch(rsValue.GetAsUnsignedLong(), rt)) {
+            if (ShouldBranch(rsValue.GetAsUnsignedLong(), hardware.registers.GetRegisterBits(rt).GetAsUnsignedLong())) {
                 var pcAddress = hardware.programCounter.GetBits().GetAsUnsignedLong();
                 var offset = imm.GetAsSignedLong();
                 hardware.programCounter.SetFromUnsignedLong(pcAddress + offset);

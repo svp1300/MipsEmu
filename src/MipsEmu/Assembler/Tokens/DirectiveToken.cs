@@ -90,6 +90,8 @@ public class NumberArgumentDirectiveToken : DirectiveToken {
                 result.Store(symbolIndex * size, symbolValue);
             }
             return result;
+        } else if (directive.Equals("space")) {
+            return new Bits(8 * Int32.Parse(GetSymbol(2, true).value));
         } else {
             return new Bits(0);
         }
