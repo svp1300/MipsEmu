@@ -15,7 +15,7 @@ public class SyscallInstruction : IInstruction {
                 break;
             case 4:
                 var address = hardware.registers.GetRegisterBits(RegisterFile.REGISTER_INDICES["a0"]).GetAsUnsignedLong();
-                Console.WriteLine(hardware.memory.ReadString(address));
+                Console.Write(hardware.memory.ReadString(address));
                 break;
             case 5:
                 var input = new Bits(32);

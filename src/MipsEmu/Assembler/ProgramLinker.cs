@@ -89,17 +89,17 @@ public class UnlinkedProgram  {
 
     private void AddProgramToString(int sectionId, StringBuilder builder) {
         var program = programSections[sectionId];
-        long textAddress = 0;
         builder.AppendLine("~~~~SECTION #" + sectionId + "~~~~");
-        foreach (var label in program.instructionLabels) {
-            builder.AppendLine($"TEXT\t{label}");
-        }
-        foreach (var label in program.directiveLabels) {
-            builder.AppendLine($"DATA\t{label}");
-        }
-        foreach (var textLine in program.instructionTokens) {
-            builder.AppendLine(textAddress + "\t" + "TEXT" + "\t" + textLine);
-            textAddress += textLine.GetByteLength(2);
+        if (program.instructionLabels.Count + program.directiveLabels.Count == 0) {
+            builder.AppendLine("No labels.");
+        } else {
+            foreach (var label in program.instructionLabels) {
+                builder.AppendLine($"TEXT\t{label}");
+            }
+            builder.AppendLine();
+            foreach (var label in program.directiveLabels) {
+                builder.AppendLine($"DATA\t{label}");
+            }
         }
     }
 
@@ -130,9 +130,9 @@ public class LinkedProgram {
             var bits = text.LoadBits(i, 32);
             var instruction = InstructionParser.ParseInstruction(bits);
             if (instruction == null) {
-                builder.AppendLine($"{address}\t!!!!");
+                builder.AppendLine($"{address:X}\t!!!!");
             } else {
-                builder.AppendLine($"{address}\t{instruction.InfoString(bits)}");
+                builder.AppendLine($"{address:X}\t{instruction.InfoString(bits)}");
             }
         }
         return builder.ToString();
@@ -170,14 +170,13 @@ public class ProgramLinker {
         // Parse
         Symbol[] symbols = LexicalAnalyzer.FindSymbols(section).ToArray();
         SyntaxParseResult result = syntaxAnalyzer.BuildProgram(symbols);
-        lock (dataLock) {
-            // register
-            int id = programSections.Count;
-            programSections.Add(result);
-            // make symbol table
-            JoinTables(result.GetExternalDataReferences(), id);
-            JoinTables(result.GetExternalTextReferences(), id);
-        }
+        // register
+        int id = programSections.Count;
+        programSections.Add(result);
+        // make symbol table
+        JoinTables(result.GetExternalDataReferences(), id);
+        JoinTables(result.GetExternalTextReferences(), id);
+    
     }
 
     /// <summary>Parse each section of the program and replace the pseudoinstructions.</summary>

@@ -3,7 +3,7 @@ namespace MipsEmu.Emulation.Devices {
 
     public class Ram {
         public static readonly long TEXT_START = 0x00400000;
-        public static readonly long DATA_START = 0x10000000;
+        public static readonly long DATA_START = 0x10010000;
         public static readonly long USER_ACCESSIBLE_START = TEXT_START;
         public static readonly long USER_ACCESSIBLE_END = 0x80000000;
         private Bits?[] memory;

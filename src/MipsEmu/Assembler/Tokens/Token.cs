@@ -1,5 +1,7 @@
 namespace MipsEmu.Assembler.Tokens;
 
+using System.Text;
+
 public class TokenFactory {
     private Dictionary<ITokenForm, Func<Symbol[], Token>> templates;
     
@@ -68,7 +70,37 @@ public abstract class Token {
     public abstract long GetByteLength(int alignment);
     public abstract void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results);
     public abstract TokenType GetTokenType();
-    
+
+    public override string ToString() {
+        var builder = new StringBuilder();
+        builder.Append(GetType().Name + "(");
+        for(int m = 0; m < match.Length; m++) {
+            builder.Append(match[m]);
+            if (m != match.Length - 1)
+                builder.Append(", ");
+        }
+        builder.Append(")");
+        return builder.ToString();
+    }
+
+    public override bool Equals(object? obj) {
+        if (obj == null)
+            return false;
+        else if (obj is Token) {
+            var other = (Token) obj;
+            if (other.GetSymbolCount(false) == GetSymbolCount(false)) {
+                for (int m = 0; m < match.Length; m++) {
+                    if (!match[m].Equals(other.match[m]))
+                        return false;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public override int GetHashCode() => base.GetHashCode();
+
 }
 
 

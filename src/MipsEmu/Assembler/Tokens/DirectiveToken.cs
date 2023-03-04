@@ -1,5 +1,6 @@
 namespace MipsEmu.Assembler.Tokens;
 
+using System.Text.RegularExpressions;
 
 public abstract class DirectiveToken : Token {
     private string[] validNames;
@@ -89,6 +90,8 @@ public class NumberArgumentDirectiveToken : DirectiveToken {
                 result.Store(symbolIndex * size, symbolValue);
             }
             return result;
+        } else if (directive.Equals("space")) {
+            return new Bits(8 * Int32.Parse(GetSymbol(2, true).value));
         } else {
             return new Bits(0);
         }
@@ -121,14 +124,20 @@ public class TextArgumentDirectiveToken : DirectiveToken {
 public class StringArgumentDirectiveToken : DirectiveToken {
     public static readonly ITokenForm FORM = new FixedTokenForm(new SymbolType[] {SymbolType.DOT, SymbolType.NAME, SymbolType.STRING}, true);
     public static readonly string[] VALID_NAMES = new string[] {"asciiz", "ascii"};
-
-    public StringArgumentDirectiveToken(Symbol[] match) : base(match, VALID_NAMES) { }
+    private string value;
+    public StringArgumentDirectiveToken(Symbol[] match) : base(match, VALID_NAMES) {
+        value = GetSymbolString(2);
+        value = value.Substring(1, value.Length - 2);
+        value = Regex.Replace(value, "\\\\\\\\", "\\");
+        value = Regex.Replace(value, "\\\\n", "\n");
+        value = Regex.Replace(value, "\\\\t", "\t");
+    }
 
     public override void UpdateAssemblerState(AnalyzerState state, SyntaxParseResult results) { }
 
     public override long GetByteLength(int alignment) {// TODO alignment support
         string directive = GetSymbolString(1);
-        int length = GetSymbolString(2, true).Length - 2;
+        int length = value.Length;
         if (directive.Equals("asciiz"))
             return length + 1;
         else if (directive.Equals("ascii"))
@@ -141,8 +150,6 @@ public class StringArgumentDirectiveToken : DirectiveToken {
 
     public override Bits MakeValueBits(UnlinkedProgram sections, int sectionId, long psuedoAddress) {
         string directive = GetSymbolString(1);
-        string value = GetSymbolString(2);
-        value = value.Substring(1, value.Length - 2);
         int size;
         if (directive.Equals("asciiz"))
             size = 8 * (value.Length + 1);

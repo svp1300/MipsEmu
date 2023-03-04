@@ -10,11 +10,11 @@ public class PseudoInstructionExpander {
     }
 
     /// <summary>Offset the labels after an expanded instruction, so that they are functionally equivalent.</summary>
-    private void FixSectionLabels(int instructionIndex, int expansionOffset, SyntaxParseResult section) {
+    private void FixSectionLabels(int instructionIndex, int expansionOffset, long sectionTextStart, SyntaxParseResult section) {
         for (int labelIndex = 0; labelIndex < section.instructionLabels.Count; labelIndex++) {
             var label = section.instructionLabels[labelIndex];
-            if (label.GetAddress() > instructionIndex * 32)  {
-                label.AddAddressOffset(expansionOffset * 32);
+            if (label.GetAddress() > sectionTextStart + instructionIndex * 4)  {
+                label.AddAddressOffset(expansionOffset * 4);
             }
         }
     }
@@ -37,7 +37,7 @@ public class PseudoInstructionExpander {
             if (update.Length != 0) {
                 section.instructionTokens.RemoveAt(index);
                 section.instructionTokens.InsertRange(index, update);
-                FixSectionLabels(index, update.Length - 1, section);
+                FixSectionLabels(index, update.Length - 1, unlinked.GetTextStartAddress(sectionId), section);
                 index += update.Length;
                 expansion += update.Length - 1;
             } else {

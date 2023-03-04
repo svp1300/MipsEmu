@@ -16,7 +16,7 @@ public class Label {
     }
 
     public override string ToString() {
-        return Name + ":" + address;
+        return $"{Name}:{address:X}";
     }
 
     public override bool Equals([NotNullWhen(true)] object? obj) {
@@ -29,6 +29,7 @@ public class Label {
 
     public override int GetHashCode() => Name.GetHashCode();
     
+    /// <summary>Find a label in a list of labels.</summary>
     public static Label? FindLabel(string name, List<Label> labels) {
         foreach(var l in labels) {
             if (l.Name.Equals(name))
@@ -37,6 +38,7 @@ public class Label {
         return null;
     }
 
+    /// <summary>Offset the address by an amount. Used when the location of a label changes later in the assembly process.</summary>
     public void AddAddressOffset(long amount) {
         address += amount;
     }
@@ -109,17 +111,17 @@ public class SyntaxParseResult {
         var builder = new StringBuilder();
         builder.AppendLine("Instruction Tokens:");
         foreach(var token in instructionTokens)
-            builder.AppendLine("\t" + token);
+            builder.AppendLine("\t" + token.GetType().Name);
         builder.AppendLine("\nDirective Tokens:");
         foreach(var token in directiveTokens)
-            builder.AppendLine("\t" + token);
+            builder.AppendLine("\t" + token.GetType().Name);
 
         builder.AppendLine("\nInstruction Labels:");
         foreach(var token in instructionLabels)
-            builder.AppendLine("\t" + token);
+            builder.AppendLine("\t" + token.GetType().Name);
         builder.AppendLine("\nDirective Labels:");
         foreach(var token in directiveLabels)
-            builder.AppendLine("\t" + token);
+            builder.AppendLine("\t" + token.GetType().Name);
 
         builder.AppendLine("\nGlobal Labels:");
         foreach(var label in globals)
